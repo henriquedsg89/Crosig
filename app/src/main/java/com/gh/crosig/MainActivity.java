@@ -14,6 +14,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.facebook.AppEventsLogger;
 import com.facebook.Session;
@@ -22,7 +23,6 @@ import com.facebook.UiLifecycleHelper;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 
 public class MainActivity extends FragmentActivity {
@@ -84,7 +84,8 @@ public class MainActivity extends FragmentActivity {
             if (state.isOpened()) {
                 // If the session state is open:
                 // Show the authenticated fragment
-                showFragment(SELECTION, false);
+                showFragment(SETTINGS
+                        , false);
             } else if (state.isClosed()) {
                 // If the session state is closed:
                 // Show the login fragment
@@ -150,7 +151,6 @@ public class MainActivity extends FragmentActivity {
         uiHelper.onActivityResult(requestCode, resultCode, data);
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -196,4 +196,9 @@ public class MainActivity extends FragmentActivity {
         }
     };
 
+    public void goAnonymous(View view) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("anonymous", true);
+        this.startActivity(intent);
+    }
 }

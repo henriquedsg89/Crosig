@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_id">405475516292685</string>
     <string name="app_name">Crosig</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="settings">Settings</string>
+    <string name="settings">Configurações</string>
+    <string name="title_activity_maps">Mapa</string>
+    <string name="go_anonymous">Modo anonimo</string>
+    <string name="login_facebook">Entrar com Facebook</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="problem_name">Nome do problema</string>
+    <string name="problem_description">Descrição do problema</string>
+
 
 </resources>
