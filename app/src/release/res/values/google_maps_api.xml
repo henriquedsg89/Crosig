@@ -1,18 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="google_maps_key_instructions" templateMergeStrategy="replace"><!--
 
+    <string name="google_maps_key_instructions">
+        <!--
     TODO: Before you run your application, you need a Google Maps API key.
 
     To get one, follow this link, follow the directions and press "Create" at the end:
 
-https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=2A:5D:64:C5:A2:E4:53:44:A0:9C:10:B4:E9:5C:00:38:27:10:D3:5C%3Bcom.gh.crosig.maps
+https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=2A:5D:64:C5:A2:E4:53:44:A0:9C:10:B4:E9:5C:00:38:27:10:D3:5C%3Bcom.gh.crosig
 
     You can also add your credentials to an existing key, using this line:
-    2A:5D:64:C5:A2:E4:53:44:A0:9C:10:B4:E9:5C:00:38:27:10:D3:5C;com.gh.crosig.maps
+    2A:5D:64:C5:A2:E4:53:44:A0:9C:10:B4:E9:5C:00:38:27:10:D3:5C;com.gh.crosig
 
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
-    --></string>
-
+        -->
+    </string>
     <string name="google_maps_key" templateMergeStrategy="preserve">YOUR_KEY_HERE</string>
+
 </resources>
