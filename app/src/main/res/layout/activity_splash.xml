@@ -12,6 +12,7 @@
         android:layout_gravity="center"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:layout_marginTop="50dp"
         android:gravity="center"
         android:src="@drawable/city_white_64" />
 
@@ -26,15 +27,14 @@
         android:textStyle="bold"
         android:typeface="serif" />
 
-    <com.facebook.widget.LoginButton
-        xmlns:fb="http://schemas.android.com/apk/res-auto"
+    <com.facebook.widget.LoginButton xmlns:fb="http://schemas.android.com/apk/res-auto"
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="30dp"
         android:layout_marginTop="30dp"
-        fb:login_text="@string/login_facebook"/>
+        fb:login_text="@string/login_facebook" />
 
     <Button
         android:id="@+id/go_anonymous"
@@ -43,9 +43,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="30dp"
         android:layout_marginTop="30dp"
-        android:text="@string/go_anonymous"
         android:onClick="goAnonymous"
-        />
+        android:text="@string/go_anonymous" />
 
 
 </LinearLayout>

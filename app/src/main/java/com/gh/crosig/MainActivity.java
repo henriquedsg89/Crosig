@@ -1,204 +1,168 @@
 package com.gh.crosig;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
-import android.os.PersistableBundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.util.Base64;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.facebook.AppEventsLogger;
+import com.facebook.Request;
+import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
+import com.facebook.model.GraphUser;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
+public class MainActivity extends ActionBarActivity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-public class MainActivity extends FragmentActivity {
-
-    private static final int SPLASH = 0;
-    private static final int SELECTION = 1;
-    private static final int SETTINGS = 2;
-    private static final int FRAGMENT_COUNT = 3;
-    private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
-
-    private boolean isResumed = false;
-    private UiLifecycleHelper uiHelper;
-    private MenuItem settings;
-
-    private void showFragment(int fragmentIndex, boolean addToBackStack) {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        for (int i = 0; i < fragments.length; i++) {
-            if (i == fragmentIndex) {
-                transaction.show(fragments[i]);
-            } else {
-                transaction.hide(fragments[i]);
-            }
-        }
-        if (addToBackStack) {
-            transaction.addToBackStack(null);
-        }
-        transaction.commit();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Logs 'install' and 'app activate' App Events.
-        AppEventsLogger.activateApp(this);
-        isResumed = true;
-        uiHelper.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Logs 'app deactivate' App Event.
-        AppEventsLogger.deactivateApp(this);
-        isResumed = false;
-        uiHelper.onPause();
-    }
-
-    private void onSessionStateChange(Session session, SessionState state, Exception exception) {
-        // Only make changes if the activity is visible
-        if (isResumed) {
-            FragmentManager manager = getSupportFragmentManager();
-            // Get the number of entries in the back stack
-            int backStackSize = manager.getBackStackEntryCount();
-            // Clear the back stack
-            for (int i = 0; i < backStackSize; i++) {
-                manager.popBackStack();
-            }
-            if (state.isOpened()) {
-                // If the session state is open:
-                // Show the authenticated fragment
-                showFragment(SETTINGS
-                        , false);
-            } else if (state.isClosed()) {
-                // If the session state is closed:
-                // Show the login fragment
-                showFragment(SPLASH, false);
-            }
-        }
-    }
-
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-        Session session = Session.getActiveSession();
-
-        if (session != null && session.isOpened()) {
-            // if the session is already open,
-            // try to show the selection fragment
-            showFragment(SELECTION, false);
-        } else {
-            // otherwise present the splash screen
-            // and ask the person to login.
-            showFragment(SPLASH, false);
-        }
-    }
+    private static final String TAG = "MainActivity";
+    private GoogleMap mMap;
+    private GraphUser user;
+    private NavigationDrawerFragment mNavigationDrawerFragment;
+    private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        uiHelper = new UiLifecycleHelper(this,callback);
-        uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FragmentManager fm = getSupportFragmentManager();
-        fragments[SPLASH] = fm.findFragmentById(R.id.splashFragment);
-        fragments[SELECTION] = fm.findFragmentById(R.id.selectionFragment);
-        fragments[SETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
 
-        FragmentTransaction transaction = fm.beginTransaction();
-        for(int i = 0; i < fragments.length; i++) {
-            transaction.hide(fragments[i]);
-        }
-        transaction.commit();
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    "com.gh.crosig",
-                    PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
+        setUpMapIfNeeded();
 
-        } catch (NoSuchAlgorithmException e) {
-
+        Session session = Session.getActiveSession();
+        if (session != null && session.isOpened()) {
+            Request.newMeRequest(session, new Request.GraphUserCallback() {
+                @Override
+                public void onCompleted(GraphUser graphUser, Response response) {
+                user = graphUser;
+                mTitle = user.getFirstName();
+                Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
+                }
+            });
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        uiHelper.onActivityResult(requestCode, resultCode, data);
+    protected void onResume() {
+        super.onResume();
+        setUpMapIfNeeded();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        uiHelper.onDestroy();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        uiHelper.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        // only add the menu when the selection fragment is showing
-        if (fragments[SELECTION].isVisible()) {
-            if (menu.size() == 0) {
-                settings = menu.add(R.string.settings);
+    private void setUpMapIfNeeded() {
+        if (mMap == null) {
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.activity_map))
+                    .getMap();
+            if (mMap != null) {
+                setUpMap();
             }
+        }
+    }
+
+    private void setUpMap() {
+        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .commit();
+    }
+
+    public void onSectionAttached(int number) {
+        mTitle = user == null ? getString(R.string.title_section1) : user.getFirstName();
+//        switch (number) {
+//            case 1:
+//                mTitle = getString(R.string.title_section1);
+//                break;
+//            case 2:
+//                mTitle = getString(R.string.title_section2);
+//                break;
+//            case 3:
+//                mTitle = getString(R.string.title_section3);
+//                break;
+//        }
+    }
+
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setTitle(mTitle);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+            getMenuInflater().inflate(R.menu.main, menu);
+            restoreActionBar();
             return true;
-        } else {
-            menu.clear();
-            settings = null;
         }
-        return false;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.equals(settings)) {
-            showFragment(SETTINGS, true);
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
             return true;
         }
-        return false;
+        return super.onOptionsItemSelected(item);
     }
 
-    private Session.StatusCallback callback = new Session.StatusCallback() {
-        @Override
-        public void call(Session session,
-                         SessionState state, Exception exception) {
-            onSessionStateChange(session, state, exception);
+    public static class PlaceholderFragment extends Fragment {
+
+        private static final String ARG_SECTION_NUMBER = "section_number";
+
+        public static PlaceholderFragment newInstance(int sectionNumber) {
+            PlaceholderFragment fragment = new PlaceholderFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
         }
-    };
 
-    public void goAnonymous(View view) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("anonymous", true);
-        this.startActivity(intent);
+        public PlaceholderFragment() {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            return rootView;
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            ((MainActivity) activity).onSectionAttached(
+                    getArguments().getInt(ARG_SECTION_NUMBER));
+        }
     }
+
 }
