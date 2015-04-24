@@ -6,28 +6,11 @@
     android:name="com.gh.crosig.NewProblem"
     tools:layout="@layout/fragment_new_problem">
 
-    <ScrollView
+    <EditText
+        android:id="@+id/problem_name"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:scrollbars="vertical">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="@string/problem_name" />
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical">
-
-            <EditText
-                android:id="@+id/problem_name"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/problem_name" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Salvar"/>
-        </LinearLayout>
-    </ScrollView>
 </LinearLayout>

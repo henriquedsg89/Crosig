@@ -1,26 +1,22 @@
 package com.gh.crosig;
 
-import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import com.facebook.AppEventsLogger;
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -29,7 +25,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+            NewProblem.NoticeDialogListener {
 
     private static final String TAG = "MainActivity";
     private GoogleMap mMap;
@@ -44,31 +41,40 @@ public class MainActivity extends ActionBarActivity
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
         setUpMapIfNeeded();
-
-        Session session = Session.getActiveSession();
-        if (session != null && session.isOpened()) {
-            Request.newMeRequest(session, new Request.GraphUserCallback() {
-                @Override
-                public void onCompleted(GraphUser graphUser, Response response) {
-                user = graphUser;
-                mTitle = user.getFirstName();
-                Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
-                }
-            });
-        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        setUpUserIfNeed();
+    }
+
+    private void setUpUserIfNeed() {
+        if (user == null) {
+            Session session = Session.getActiveSession();
+            if (session != null && session.isOpened()) {
+                Request.newMeRequest(session, new Request.GraphUserCallback() {
+                    @Override
+                    public void onCompleted(GraphUser graphUser, Response response) {
+                    user = graphUser;
+                    mTitle = user.getFirstName();
+                    if (mTitle.length() > 10) {
+                        mTitle = mTitle.subSequence(0, 7) + "...";
+                    }
+                    Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
+                    }
+                }).executeAsync();
+            } else {
+                Log.i(TAG, "Facebook session isn't opened!");
+            }
+        }
     }
 
     private void setUpMapIfNeeded() {
@@ -94,18 +100,14 @@ public class MainActivity extends ActionBarActivity
     }
 
     public void onSectionAttached(int number) {
-        mTitle = user == null ? getString(R.string.title_section1) : user.getFirstName();
-//        switch (number) {
-//            case 1:
-//                mTitle = getString(R.string.title_section1);
-//                break;
-//            case 2:
-//                mTitle = getString(R.string.title_section2);
-//                break;
-//            case 3:
-//                mTitle = getString(R.string.title_section3);
-//                break;
-//        }
+        switch (number) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
     }
 
     public void restoreActionBar() {
@@ -135,34 +137,24 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public static class PlaceholderFragment extends Fragment {
-
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
+    public void newProblem(MenuItem item) {
+        Log.i(TAG, "Click at new problem icon!");
+        DialogFragment dialog = new NewProblem();
+        dialog.show(getFragmentManager(), "NewProblem");
     }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, NewProblem.ProblemData data) {
+        Log.i(TAG, "New problem dialog positive click");
+        String problemName = ((EditText)findViewById(R.id.problem_name)).getText().toString();
+        Log.i(TAG, "Problem name = " + problemName);
+        Toast.makeText(getApplicationContext(),
+                data.getName().length() > 15 ? data.getName().substring(0, 10) : data.getName(),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog, NewProblem.ProblemData data) {
+        Log.i(TAG, "New problem dialog negative click");
+    }
 }
