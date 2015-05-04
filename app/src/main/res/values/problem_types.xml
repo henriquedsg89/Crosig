@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="problem_types">
+        <item>Iluminação</item>
+        <item>Asfalto</item>
+        <item>Calçada</item>
+        <item>Lixo</item>
+    </string-array>
+</resources>

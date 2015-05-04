@@ -1,7 +1,7 @@
 package com.gh.crosig;
 
-import android.app.DialogFragment;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -10,34 +10,47 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphUser;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-            NewProblem.NoticeDialogListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private static final String TAG = "MainActivity";
+    private static final String REQUESTING_LOCATION_UPDATES_KEY = "location";
+    private static final String LOCATION_KEY = "currentLocation";
+    private static final String LAST_UPDATED_TIME_STRING_KEY = "lastUpdate";
     private GoogleMap mMap;
     private GraphUser user;
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;
+    private GoogleApiClient mGoogleApiClient;
+    private boolean mLocationUpdates = true;
+    private String mLastUpdateTime;
+    private Location mCurrentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        updateValuesFromBundle(savedInstanceState);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -46,6 +59,7 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        buildGoogleApiClient();
         setUpMapIfNeeded();
     }
 
@@ -54,6 +68,9 @@ public class MainActivity extends ActionBarActivity
         super.onResume();
         setUpMapIfNeeded();
         setUpUserIfNeed();
+        if (mGoogleApiClient.isConnected() && !mLocationUpdates) {
+            startLocationUpdates();
+        }
     }
 
     private void setUpUserIfNeed() {
@@ -88,7 +105,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        mMap.setMyLocationEnabled(true);
     }
 
     @Override
@@ -139,22 +156,99 @@ public class MainActivity extends ActionBarActivity
 
     public void newProblem(MenuItem item) {
         Log.i(TAG, "Click at new problem icon!");
-        DialogFragment dialog = new NewProblem();
-        dialog.show(getFragmentManager(), "NewProblem");
+        Intent intent = new Intent(this, NewProblem.class);
+        startActivity(intent);
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog, NewProblem.ProblemData data) {
-        Log.i(TAG, "New problem dialog positive click");
-        String problemName = ((EditText)findViewById(R.id.problem_name)).getText().toString();
-        Log.i(TAG, "Problem name = " + problemName);
-        Toast.makeText(getApplicationContext(),
-                data.getName().length() > 15 ? data.getName().substring(0, 10) : data.getName(),
-                Toast.LENGTH_SHORT).show();
+    public void onConnected(Bundle bundle) {
+        if (mLocationUpdates) {
+            startLocationUpdates();
+        }
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+    }
+
+    private void startLocationUpdates() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, createLocationRequest(), this);
     }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog, NewProblem.ProblemData data) {
-        Log.i(TAG, "New problem dialog negative click");
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    protected LocationRequest createLocationRequest() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return mLocationRequest;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        mCurrentLocation = location;
+        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        updateUI();
+    }
+
+    private void updateUI() {
+        if (mCurrentLocation != null) {
+            String latitude = String.valueOf(mCurrentLocation.getLatitude());
+            String longitude = String.valueOf(mCurrentLocation.getLongitude());
+            Toast.makeText(getApplicationContext(), String.format("Lat: %s, Long: %s", latitude, longitude), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    protected void stopLocationUpdates() {
+        mLocationUpdates = false;
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
+    }
+
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
+                mLocationUpdates);
+        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
+        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    private void updateValuesFromBundle(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+                mLocationUpdates = savedInstanceState.getBoolean(
+                        REQUESTING_LOCATION_UPDATES_KEY);
+            }
+            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+            }
+            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
+                mLastUpdateTime = savedInstanceState.getString(
+                        LAST_UPDATED_TIME_STRING_KEY);
+            }
+            updateUI();
+        }
     }
 }
