@@ -1,21 +1,26 @@
 package com.gh.crosig;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphUser;
+import com.facebook.widget.ProfilePictureView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -37,14 +42,15 @@ public class MainActivity extends ActionBarActivity
     private static final String REQUESTING_LOCATION_UPDATES_KEY = "location";
     private static final String LOCATION_KEY = "currentLocation";
     private static final String LAST_UPDATED_TIME_STRING_KEY = "lastUpdate";
+    private final CharSequence mTitle = "Crosig";
     private GoogleMap mMap;
     private GraphUser user;
     private NavigationDrawerFragment mNavigationDrawerFragment;
-    private CharSequence mTitle;
     private GoogleApiClient mGoogleApiClient;
     private boolean mLocationUpdates = true;
     private String mLastUpdateTime;
     private Location mCurrentLocation;
+    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +87,8 @@ public class MainActivity extends ActionBarActivity
                     @Override
                     public void onCompleted(GraphUser graphUser, Response response) {
                     user = graphUser;
-                    mTitle = user.getFirstName();
-                    if (mTitle.length() > 10) {
-                        mTitle = mTitle.subSequence(0, 7) + "...";
-                    }
+//                    ProfilePictureView pictureView = (ProfilePictureView)findViewById(R.id.profile_pic);
+//                    pictureView.setProfileId(user.getId());
                     Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
                     }
                 }).executeAsync();
@@ -138,7 +142,8 @@ public class MainActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            getMenuInflater().inflate(R.menu.main, menu);
+            getMenuInflater().inflate(R.menu.global, menu);
+            LayoutInflater.from(this).inflate(R.layout.profile_picture, null);
             restoreActionBar();
             return true;
         }
@@ -157,6 +162,10 @@ public class MainActivity extends ActionBarActivity
     public void newProblem(MenuItem item) {
         Log.i(TAG, "Click at new problem icon!");
         Intent intent = new Intent(this, NewProblem.class);
+        if (mCurrentLocation != null) {
+            intent.putExtra("long", mCurrentLocation.getLongitude());
+            intent.putExtra("lat", mCurrentLocation.getLatitude());
+        }
         startActivity(intent);
     }
 
@@ -180,11 +189,11 @@ public class MainActivity extends ActionBarActivity
     private void startLocationUpdates() {
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, createLocationRequest(), this);
+        mLocationUpdates = false;
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
@@ -222,9 +231,11 @@ public class MainActivity extends ActionBarActivity
     }
 
     protected void stopLocationUpdates() {
-        mLocationUpdates = false;
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        if (!mLocationUpdates) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+            mLocationUpdates = true;
+        }
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -251,4 +262,5 @@ public class MainActivity extends ActionBarActivity
             updateUI();
         }
     }
+
 }

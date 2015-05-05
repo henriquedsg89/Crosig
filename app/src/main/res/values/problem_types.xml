@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="problem_types">
+        <item>Acessibilidade</item>
+        <item>Água e esgoto</item>
+        <item>Alagamento</item>
+        <item>Árvore</item>
+        <item>Bem público</item>
+        <item>Buraco</item>
+        <item>Ciclovia</item>
+        <item>Comércio</item>
+        <item>Educação</item>
+        <item>Energia</item>
         <item>Iluminação</item>
-        <item>Asfalto</item>
-        <item>Calçada</item>
         <item>Lixo</item>
+        <item>Mato</item>
+        <item>Obra</item>
+        <item>Pedestre</item>
+        <item>Pichação</item>
+        <item>Poluição ar</item>
+        <item>Poluição sonora</item>
+        <item>Poluição visual</item>
+        <item>Queimada</item>
+        <item>Saúde</item>
+        <item>Segurança</item>
+        <item>Social</item>
+        <item>Transporte</item>
+        <item>Trânsito</item>
     </string-array>
 </resources>
