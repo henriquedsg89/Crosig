@@ -55,10 +55,6 @@
         <activity
             android:name=".NewProblem"
             android:label="@string/new_problem" />
-        <activity
-            android:name=".NewPicture"
-            android:label="@string/title_activity_new_picture" >
-        </activity>
     </application>
 
 </manifest>

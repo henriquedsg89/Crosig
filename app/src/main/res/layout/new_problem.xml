@@ -1,93 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ScrollView01"
-    android:name="com.gh.crosig.NewProblem"
+    android:id="@+id/new_problem_container"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:scrollbars="vertical"
-    tools:layout="@layout/new_problem">
+    tools:context="com.gh.crosig.NewProblem">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/problem_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/problem_name"
-            android:layout_marginTop="10dp" />
-
-        <EditText
-            android:id="@+id/problem_description"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/problem_description"
-            android:inputType="textMultiLine"
-            android:lines="5" />
-
-        <Spinner
-            android:id="@+id/problem_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/problem_types"
-            android:prompt="@string/select_problem_type"
-            android:spinnerMode="dropdown"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"/>
-
-        <CheckBox
-            android:id="@+id/follow_problem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/follow_problem"/>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/problem_image"
-                android:layout_width="200dp"
-                android:layout_height="200dp"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="takePicture"
-                android:text="@string/take_picture" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_gravity="bottom"
-            android:baselineAligned="true"
-            android:gravity="bottom"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/action_bar_button_cancel"
-                android:layout_width="fill_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Cancel" />
-
-            <Button
-                android:id="@+id/action_bar_button_ok"
-                android:layout_width="fill_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:onClick="saveProblem"
-                android:text="Save" />
-
-        </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+</FrameLayout>
