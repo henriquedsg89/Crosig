@@ -38,9 +38,7 @@ public class NewProblem extends FragmentActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.new_problem);
-        FragmentTransaction trans = getFragmentManager().beginTransaction();
-        trans.add(R.id.new_problem_container, new NewPhoto()).commit();
-        trans.addToBackStack(null);
+        getFragmentManager().beginTransaction().add(R.id.new_problem_container, new NewPhoto()).commit();
 //        mImageView = (ImageView) findViewById(R.id.problem_image);
 //        problemName = (EditText) findViewById(R.id.problem_name);
 //        problemDesc = (EditText) findViewById(R.id.problem_description);
