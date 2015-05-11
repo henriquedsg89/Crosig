@@ -1,51 +1,75 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.gh.crosig.NewPhoto"
-    android:id="@+id/new_photo">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/new_photo"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    tools:context="com.gh.crosig.NewPhoto"
+    android:weightSum="1">
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical">
-
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1.00"
+        android:layout_gravity="bottom">
         <ImageView
             android:id="@+id/problem_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"/>
-
-        <LinearLayout
-            android:id="@+id/new_photo_only_take_picture"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="takePicture"
-                android:text="@string/take_picture" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/new_photo_all_buttons"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick=""
-                android:text="@string/retry" />
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick=""
-                android:text="@string/cancel" />
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick=""
-                android:text="@string/next" />
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:baselineAlignBottom="false"
+            android:layout_weight="1" />
 
+        <ImageButton
+            android:id="@+id/take_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:background="#104E8B"
+            android:baselineAlignBottom="false"
+            android:clickable="true"
+            android:cropToPadding="false"
+            android:elevation="20dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:onClick="takePicture"
+            android:padding="10dp"
+            android:src="@drawable/ic_action_new_picture"
+            android:text="@string/take_picture" />
     </LinearLayout>
 
-</FrameLayout>
+    <LinearLayout
+        android:id="@+id/new_photo_all_buttons"
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:baselineAligned="true"
+        android:clickable="false"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="invisible">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="takePicture"
+            android:text="@string/retry" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="cancel"
+            android:text="@string/cancel" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="next"
+            android:text="@string/next" />
+    </LinearLayout>
+
+</LinearLayout>
