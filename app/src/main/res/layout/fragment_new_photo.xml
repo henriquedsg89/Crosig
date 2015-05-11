@@ -25,6 +25,7 @@
                 android:onClick="takePicture"
                 android:text="@string/take_picture" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/new_photo_all_buttons"
             android:layout_width="fill_parent"

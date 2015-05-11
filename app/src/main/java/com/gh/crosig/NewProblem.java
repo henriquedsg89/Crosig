@@ -3,6 +3,7 @@ package com.gh.crosig;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,6 +22,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.services.provider.ProblemProvider;
 
 public class NewProblem extends FragmentActivity
     implements NewPhoto.OnFragmentInteractionListener, NewProblemDetails.OnFragmentInteractionListener {
@@ -38,12 +40,12 @@ public class NewProblem extends FragmentActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.new_problem);
-        getFragmentManager().beginTransaction().add(R.id.new_problem_container, new NewPhoto()).commit();
+        getFragmentManager().beginTransaction().add(R.id.new_problem_container, new NewProblemDetails()).commit();
 //        mImageView = (ImageView) findViewById(R.id.problem_image);
-//        problemName = (EditText) findViewById(R.id.problem_name);
-//        problemDesc = (EditText) findViewById(R.id.problem_description);
-//        problemType = (Spinner) findViewById(R.id.problem_type);
-//        problemFollow = (CheckBox) findViewById(R.id.follow_problem);
+        problemName = (EditText) findViewById(R.id.problem_name);
+        problemDesc = (EditText) findViewById(R.id.problem_description);
+        problemType = (Spinner) findViewById(R.id.problem_type);
+        problemFollow = (CheckBox) findViewById(R.id.follow_problem);
     }
 
     @Override
@@ -68,13 +70,15 @@ public class NewProblem extends FragmentActivity
     }
 
     public void saveProblem(View view) {
-        Problem problem = new Problem(problemName.getText().toString(),
-                problemDesc.getText().toString(),
-                problemType.getSelectedItem().toString(),
-                imageBitmap,
-                getIntent().getDoubleExtra("long", 0d),
-                getIntent().getDoubleExtra("lat", 0d));
-        Toast.makeText(getApplicationContext(), String.format("Salvando...\n%s", problem.toString()),
+        ContentValues values = new ContentValues();
+        values.put(ProblemProvider.NAME, problemName.getText().toString());
+        values.put(ProblemProvider.DESC, problemDesc.getText().toString());
+        values.put(ProblemProvider.TYPE, problemType.getSelectedItem().toString());
+        values.put(ProblemProvider.LONG, getIntent().getDoubleExtra("long", 0d));
+        values.put(ProblemProvider.LAT, getIntent().getDoubleExtra("lat", 0d));
+
+        Uri uri = getContentResolver().insert(ProblemProvider.CONTENT_URI, values);
+        Toast.makeText(getBaseContext(), String.format("Salvando...\n%s", uri.toString()),
                 Toast.LENGTH_LONG).show();
     }
 
