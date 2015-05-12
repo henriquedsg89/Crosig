@@ -24,7 +24,7 @@ import android.widget.Toast;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.services.provider.ProblemProvider;
 
-public class NewProblem extends FragmentActivity
+public class NewProblem extends ActionBarActivity
     implements NewPhoto.OnFragmentInteractionListener, NewProblemDetails.OnFragmentInteractionListener {
 
     private final int REQUEST_IMAGE_CAPTURE = 1;
