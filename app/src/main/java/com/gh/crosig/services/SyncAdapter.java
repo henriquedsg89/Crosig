@@ -7,12 +7,14 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * Created by henrique on 11/05/15.
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
+    private static final String TAG = "SyncAdapter";
     // Global variables
     // Define a variable to contain a content resolver instance
     ContentResolver mContentResolver;
@@ -42,6 +44,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-
+        Log.i(TAG, "Performing.... Syncing.....");
     }
 }

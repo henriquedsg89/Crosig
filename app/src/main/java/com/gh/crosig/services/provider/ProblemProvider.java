@@ -33,8 +33,8 @@ public class ProblemProvider extends ContentProvider {
 
     private static HashMap<String, String> PROBLEMS_PROJECTION_MAP;
 
-    static final int PROBLEMS = 1;
-    static final int PROBLEMS_ID = 2;
+    public static final int PROBLEMS = 1;
+    public static final int PROBLEMS_ID = 2;
 
     static final UriMatcher uriMatcher;
     static{
@@ -177,6 +177,6 @@ public class ProblemProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-       return null;
+        return null;
     }
 }

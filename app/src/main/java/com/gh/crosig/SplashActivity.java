@@ -83,7 +83,7 @@ public class SplashActivity extends Activity {
     };
 
     public void goAnonymous(View view) {
-        Intent intent = new Intent(this, NewProblem.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("anonymous", true);
         this.startActivity(intent);
     }

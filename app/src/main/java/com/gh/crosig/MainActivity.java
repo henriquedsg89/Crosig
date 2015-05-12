@@ -4,7 +4,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.ProfilePictureView;
+import com.gh.crosig.services.provider.ProblemProvider;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -32,6 +35,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -74,8 +79,20 @@ public class MainActivity extends ActionBarActivity
 
         buildGoogleApiClient();
         setUpMapIfNeeded();
-
+        loadProblems();
 //        mAccount = CreateSyncAccount(this);
+    }
+
+    private void loadProblems() {
+        Cursor cursor = getContentResolver().query(ProblemProvider.CONTENT_URI, new String[] {
+                ProblemProvider.NAME, ProblemProvider.LAT, ProblemProvider.LONG
+        }, null, null, null);
+        if (cursor.moveToFirst()) {
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(cursor.getDouble(1), cursor.getDouble(2)))
+                    .title(cursor.getString(0)));
+        }
+        cursor.close();
     }
 
     @Override
@@ -95,10 +112,10 @@ public class MainActivity extends ActionBarActivity
                 Request.newMeRequest(session, new Request.GraphUserCallback() {
                     @Override
                     public void onCompleted(GraphUser graphUser, Response response) {
-                    user = graphUser;
+                        user = graphUser;
 //                    ProfilePictureView pictureView = (ProfilePictureView)findViewById(R.id.profile_pic);
 //                    pictureView.setProfileId(user.getId());
-                    Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
+                        Log.i(TAG, String.format("Logged as %s", user.getFirstName()));
                     }
                 }).executeAsync();
             } else {
@@ -272,36 +289,5 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    public static Account CreateSyncAccount(Context context) {
-        // Create the account type and default account
-        Account newAccount = new Account(
-                ACCOUNT, ACCOUNT_TYPE);
-        // Get an instance of the Android account manager
-        AccountManager accountManager =
-                (AccountManager) context.getSystemService(
-                        ACCOUNT_SERVICE);
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
-
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-            /*
-             * If you don't set android:syncable="true" in
-             * in your <provider> element in the manifest,
-             * then call context.setIsSyncable(account, AUTHORITY, 1)
-             * here.
-             */
-            Log.d(TAG, "Account added successful!");
-        } else {
-            /*
-             * The account exists or some other error occurred. Log this, report it,
-             * or handle it internally.
-             */
-            Log.e(TAG, "Account add ERROR!");
-        }
-
-        return newAccount;
-    }
 
 }

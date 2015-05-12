@@ -42,10 +42,7 @@ public class NewProblem extends ActionBarActivity
         setContentView(R.layout.new_problem);
         getFragmentManager().beginTransaction().add(R.id.new_problem_container, new NewProblemDetails()).commit();
 //        mImageView = (ImageView) findViewById(R.id.problem_image);
-        problemName = (EditText) findViewById(R.id.problem_name);
-        problemDesc = (EditText) findViewById(R.id.problem_description);
-        problemType = (Spinner) findViewById(R.id.problem_type);
-        problemFollow = (CheckBox) findViewById(R.id.follow_problem);
+
     }
 
     @Override
@@ -71,6 +68,12 @@ public class NewProblem extends ActionBarActivity
 
     public void saveProblem(View view) {
         ContentValues values = new ContentValues();
+
+        problemName = (EditText) findViewById(R.id.problem_name);
+        problemDesc = (EditText) findViewById(R.id.problem_description);
+        problemType = (Spinner) findViewById(R.id.problem_type);
+        problemFollow = (CheckBox) findViewById(R.id.follow_problem);
+
         values.put(ProblemProvider.NAME, problemName.getText().toString());
         values.put(ProblemProvider.DESC, problemDesc.getText().toString());
         values.put(ProblemProvider.TYPE, problemType.getSelectedItem().toString());
@@ -80,6 +83,7 @@ public class NewProblem extends ActionBarActivity
         Uri uri = getContentResolver().insert(ProblemProvider.CONTENT_URI, values);
         Toast.makeText(getBaseContext(), String.format("Salvando...\n%s", uri.toString()),
                 Toast.LENGTH_LONG).show();
+        finish();
     }
 
     @Override
