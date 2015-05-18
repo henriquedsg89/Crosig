@@ -2,25 +2,53 @@ package com.gh.crosig.model;
 
 import android.graphics.Bitmap;
 
+import com.parse.ParseClassName;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+
 /**
  * Created by henrique on 05/05/15.
  */
-public class Problem {
+@ParseClassName("Posts")
+public class Problem extends ParseObject {
 
-    private final String name;
-    private final String desc;
-    private final String type;
-    private final Bitmap image;
-    private final double lon;
-    private final double lat;
+    private String name;
+    private String desc;
+    private String type;
+    private Bitmap image;
+    private ParseGeoPoint parseGeoPoint;
 
-    public Problem(String name, String desc, String type, Bitmap image, double lon, double lat) {
+    public Problem() {
+    }
+
+    public static ParseQuery<Problem> getQuery() {
+        return ParseQuery.getQuery(Problem.class);
+    }
+
+    public Problem name(String name) {
         this.name = name;
+        return this;
+    }
+
+    public Problem desc(String desc) {
         this.desc = desc;
+        return this;
+    }
+
+    public Problem type(String type) {
         this.type = type;
+        return this;
+    }
+
+    public Problem image(Bitmap image) {
         this.image = image;
-        this.lon = lon;
-        this.lat = lat;
+        return this;
+    }
+
+    public Problem location(ParseGeoPoint geoPoint) {
+        this.parseGeoPoint = geoPoint;
+        return this;
     }
 
     public String getName() {
@@ -39,12 +67,8 @@ public class Problem {
         return image;
     }
 
-    public double getLat() {
-        return lat;
-    }
-
-    public double getLon() {
-        return lon;
+    public ParseGeoPoint getLocation() {
+        return parseGeoPoint;
     }
 
     @Override
@@ -54,8 +78,7 @@ public class Problem {
                 ", desc='" + desc + '\'' +
                 ", type='" + type + '\'' +
                 ", image=" + image +
-                ", lon=" + lon +
-                ", lat=" + lat +
+                ", parseGeoPoint=" + parseGeoPoint +
                 '}';
     }
 }

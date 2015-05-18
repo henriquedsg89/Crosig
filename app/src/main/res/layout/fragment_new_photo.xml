@@ -22,22 +22,6 @@
             android:baselineAlignBottom="false"
             android:layout_weight="1" />
 
-        <ImageButton
-            android:id="@+id/take_pic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
-            android:background="#104E8B"
-            android:baselineAlignBottom="false"
-            android:clickable="true"
-            android:cropToPadding="false"
-            android:elevation="20dp"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:onClick="takePicture"
-            android:padding="10dp"
-            android:src="@drawable/ic_action_new_picture"
-            android:text="@string/take_picture" />
     </LinearLayout>
 
     <LinearLayout
@@ -47,8 +31,7 @@
         android:baselineAligned="true"
         android:clickable="false"
         android:orientation="horizontal"
-        android:padding="5dp"
-        android:visibility="invisible">
+        android:padding="5dp">
 
         <Button
             android:layout_width="wrap_content"
