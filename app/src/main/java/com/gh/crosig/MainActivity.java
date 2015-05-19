@@ -20,6 +20,8 @@ import com.facebook.widget.ProfilePictureView;
 import com.gh.crosig.model.Problem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,7 +44,8 @@ import static android.widget.Toast.LENGTH_LONG;
 
 
 public class MainActivity extends ActionBarActivity
-        implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     public static final String INTENT_EXTRA_LOCATION = "location";
     private static final int MAX_SEARCH_DISTANCE = 100;
@@ -51,7 +54,7 @@ public class MainActivity extends ActionBarActivity
     private GoogleMap mMap;
     private GraphUser user;
     private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation;
+    private Location mLastLocation, previousLocation;
     private List<Marker> markers = new LinkedList<>();
 
     @Override
@@ -86,6 +89,7 @@ public class MainActivity extends ActionBarActivity
         Log.d(TAG, "On resuming...");
         setUpMapIfNeeded();
         setUpUserIfNeed();
+        executeMapQuery();
     }
 
     private void setUpUserIfNeed() {
@@ -177,11 +181,11 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        super.onPause();
     }
 
     @Override
@@ -195,6 +199,7 @@ public class MainActivity extends ActionBarActivity
                     new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), 16));
             executeMapQuery();
         }
+        requestLocationUpdates();
     }
 
     @Override
@@ -208,16 +213,44 @@ public class MainActivity extends ActionBarActivity
         mGoogleApiClient.connect();
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        this.previousLocation = mLastLocation;
+        this.mLastLocation = location;
+        if (previousLocation == null) {
+            executeMapQuery();
+        } else if (new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude())
+                .distanceInKilometersTo(new ParseGeoPoint(previousLocation.getLatitude(), previousLocation.getLongitude()))
+                > 0.5) { // se a distância for maior que 50 metros, recarrega
+            executeMapQuery();
+        }
+        moveCamera(location);
+    }
+
+    private void requestLocationUpdates() {
+        LocationRequest lr = new LocationRequest().setInterval(10000)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setFastestInterval(2000);
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, lr, this);
+    }
+
+    private void moveCamera(Location location) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
+    }
+
     private void executeMapQuery() {
         if (mLastLocation == null) {
             return;
         }
+
         ParseQuery<Problem> mapQuery = Problem.getQuery();
         mapQuery.whereWithinKilometers("location", new ParseGeoPoint(mLastLocation.getLatitude(),
                 mLastLocation.getLongitude()), MAX_SEARCH_DISTANCE);
         mapQuery.include("user");
         mapQuery.orderByDescending("createdAt");
         mapQuery.setLimit(MAX_SEARCH_DISTANCE);
+
         mapQuery.findInBackground(new FindCallback<Problem>() {
             @Override
             public void done(List<Problem> problems, com.parse.ParseException e) {
@@ -234,4 +267,6 @@ public class MainActivity extends ActionBarActivity
             }
         });
     }
+
+
 }

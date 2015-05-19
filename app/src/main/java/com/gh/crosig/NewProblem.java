@@ -1,6 +1,7 @@
 package com.gh.crosig;
 
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +20,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.utils.ProgressUtils;
 import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -94,12 +96,16 @@ public class NewProblem extends ActionBarActivity {
         Toast.makeText(getApplicationContext(), String.format("Salvando...\n%s", problem.getName()),
                 Toast.LENGTH_LONG).show();
 
+
+        final ProgressDialog pd = ProgressUtils.newProgressDlg(this);
+
         ParseACL acl = new ParseACL();
         acl.setPublicReadAccess(true);
         problem.setACL(acl);
         problem.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
+                pd.dismiss();
                 finish();
             }
         });
