@@ -30,10 +30,11 @@ public class ViewProblem extends ActionBarActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        TextView tv = (TextView) findViewById(R.id.view_problem_name);
-                        tv.setText(problem.getName());
                         ParseImageView piv = (ParseImageView) findViewById(R.id.view_problem_image);
                         piv.setParseFile(problem.getImage());
+                        piv.loadInBackground();
+                        TextView tv = (TextView) findViewById(R.id.view_problem_name);
+                        tv.setText(problem.getName());
                     }
                 });
             }
