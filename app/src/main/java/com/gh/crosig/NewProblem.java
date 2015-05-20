@@ -129,10 +129,14 @@ public class NewProblem extends ActionBarActivity {
                 acl.setPublicReadAccess(true);
                 problem.setACL(acl);
                 problem.setImage(parseFile);
-                problem.saveInBackground();
+                problem.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        finish();
+                    }
+                });
             }
         });
-        finish();
     }
 
 

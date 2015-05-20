@@ -34,6 +34,8 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="30dp"
         android:layout_marginTop="30dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:onClick="loginFb"
         android:textColor="#fff"
         android:background="@color/com_facebook_button_background_color"

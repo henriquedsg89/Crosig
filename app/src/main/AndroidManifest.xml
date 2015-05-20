@@ -58,7 +58,7 @@
             android:name=".NewProblem"
             android:label="@string/new_problem" />
         <activity
-            android:name=".model.ViewProblem"
+            android:name=".ViewProblem"
             android:label="@string/title_activity_view_problem" >
         </activity>
     </application>

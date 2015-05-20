@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.model.SuggestedStatus;
 import com.parse.LogInCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -30,6 +31,7 @@ public class SplashActivity extends Activity {
 
     private void initDB() {
         ParseObject.registerSubclass(Problem.class);
+        ParseObject.registerSubclass(SuggestedStatus.class);
         Parse.initialize(this, "k4C4iDQPonsBtWzZeOyzsxQrYpfn7ODBilu5v2XC", "80AjPLWpKuTZs0oI4A8Tb9wOXuWPzzHWoCS40ZGd");
 
         ParseFacebookUtils.initialize(getApplicationContext());

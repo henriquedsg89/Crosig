@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="problem_status">
+        <item>Aguardando resolução</item>
+        <item>Resolução em andamento</item>
+        <item>Problema resolvido</item>
+    </string-array>
+</resources>

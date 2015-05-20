@@ -63,8 +63,13 @@ public class Problem extends ParseObject {
         return (ParseFile) get("image");
     }
 
+    public ParseUser getUser() { return (ParseUser)get("user"); }
+
     public ParseGeoPoint getLocation() {
         return (ParseGeoPoint)get("location");
     }
 
+    public void setStatus(int status) {
+        put("status", status);
+    }
 }
