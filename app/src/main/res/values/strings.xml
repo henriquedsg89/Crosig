@@ -30,4 +30,5 @@
     <string name="retry">Repetir</string>
     <string name="next">Próximo</string>
     <string name="progress_dialog">Aguarde...</string>
+    <string name="title_activity_view_problem">ViewProblem</string>
 </resources>

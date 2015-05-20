@@ -1,84 +1,70 @@
 package com.gh.crosig.model;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 import com.parse.ParseClassName;
+import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by henrique on 05/05/15.
  */
-@ParseClassName("Posts")
+@ParseClassName("Problem")
 public class Problem extends ParseObject {
-
-    private String name;
-    private String desc;
-    private String type;
-    private Bitmap image;
-    private ParseGeoPoint parseGeoPoint;
-
-    public Problem() {
-    }
 
     public static ParseQuery<Problem> getQuery() {
         return ParseQuery.getQuery(Problem.class);
     }
 
-    public Problem name(String name) {
-        this.name = name;
-        return this;
+    public void setName(String name) {
+        put("name", name);
     }
 
-    public Problem desc(String desc) {
-        this.desc = desc;
-        return this;
+    public void setDesc(String desc) {
+        put("desc", desc);
     }
 
-    public Problem type(String type) {
-        this.type = type;
-        return this;
+    public void setType(String type) {
+        put("type", type);
     }
 
-    public Problem image(Bitmap image) {
-        this.image = image;
-        return this;
+    public void setImage(ParseFile image) {
+        put("image", image);
     }
 
-    public Problem location(ParseGeoPoint geoPoint) {
-        this.parseGeoPoint = geoPoint;
-        return this;
+    public void setUser(ParseUser user) {
+        put("user", user);
+    }
+
+    public void setParseGeoPoint(ParseGeoPoint location) {
+        put("location", location);
     }
 
     public String getName() {
-        return name;
+        return (String)get("name");
     }
 
     public String getDesc() {
-        return desc;
+        return (String)get("desc");
     }
 
     public String getType() {
-        return type;
+        return (String)get("type");
     }
 
-    public Bitmap getImage() {
-        return image;
+    public ParseFile getImage() {
+        return (ParseFile) get("image");
     }
 
     public ParseGeoPoint getLocation() {
-        return parseGeoPoint;
+        return (ParseGeoPoint)get("location");
     }
 
-    @Override
-    public String toString() {
-        return "Problem{" +
-                "name='" + name + '\'' +
-                ", desc='" + desc + '\'' +
-                ", type='" + type + '\'' +
-                ", image=" + image +
-                ", parseGeoPoint=" + parseGeoPoint +
-                '}';
-    }
 }
