@@ -1,5 +1,5 @@
 <!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
-<android.support.v4.widget.DrawerLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
@@ -16,47 +16,32 @@
 
     <FrameLayout android:id="@+id/container" android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="10dp">
+        android:padding="10dp"/>
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/favorites"
-            android:layout_gravity="left|bottom"
-            android:clickable="true"
-            android:src="@drawable/ic_action_important"
-            android:background="#104E8B"
-            android:padding="10dp"
-            android:baselineAlignBottom="true"
-            android:cropToPadding="false"
-            android:elevation="20dp" />
+    <ImageView
+        android:id="@+id/profile_picture"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="top|start"/>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/new_problem"
-            android:layout_gravity="center_horizontal|bottom"
             android:clickable="true"
             android:src="@drawable/ic_action_place"
             android:background="#104E8B"
             android:padding="10dp"
             android:baselineAlignBottom="true"
             android:cropToPadding="false"
-            android:elevation="20dp" />
+            android:layout_gravity="end"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageButton3"
-            android:layout_gravity="right|bottom"
-            android:clickable="true"
-            android:src="@drawable/ic_action_search"
-            android:background="#104E8B"
-            android:padding="10dp"
-            android:baselineAlignBottom="true"
-            android:cropToPadding="false"
-            android:elevation="20dp" />
-
-    </FrameLayout>
-
-</android.support.v4.widget.DrawerLayout>
+</RelativeLayout>

@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.utils.ImageUtils;
 import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -64,7 +65,7 @@ public class NewProblem extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            imageBitmap = (Bitmap) extras.get("data");
+            imageBitmap = ImageUtils.rotateImage((Bitmap) extras.get("data"));
             mImageView = (ParseImageView) findViewById(R.id.problem_image);
             mImageView.setImageBitmap(imageBitmap);
         }
@@ -88,7 +89,6 @@ public class NewProblem extends ActionBarActivity {
         problemName = (EditText) findViewById(R.id.problem_name);
         problemDesc = (EditText) findViewById(R.id.problem_description);
         problemType = (Spinner) findViewById(R.id.problem_type);
-        problemFollow = (CheckBox) findViewById(R.id.follow_problem);
 
         if (problemName.getText().toString().length() == 0) {
             Toast.makeText(getApplicationContext(), "Informe o título do problema!", Toast.LENGTH_LONG);
@@ -107,21 +107,11 @@ public class NewProblem extends ActionBarActivity {
         Toast.makeText(getApplicationContext(), String.format("Salvando...\n%s", problem.getName()),
                 Toast.LENGTH_LONG).show();
 
-
         ParseACL acl = new ParseACL();
         acl.setPublicReadAccess(true);
 
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
-        Bitmap rotatedScaledMealImage = Bitmap.createBitmap(imageBitmap, 0,
-                0, imageBitmap.getWidth(), imageBitmap.getHeight(),
-                matrix, true);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        rotatedScaledMealImage.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-        byte[] data = bos.toByteArray();
-
-        final ParseFile parseFile = new ParseFile("test.jpg", data);
+        final ParseFile parseFile = new ParseFile("test.jpg",
+                ImageUtils.bitmapToByteArray(imageBitmap));
         parseFile.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {

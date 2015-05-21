@@ -6,10 +6,10 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -34,8 +34,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
+import com.parse.ParseFacebookUtils;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.io.IOException;
 import java.net.URL;
@@ -71,6 +73,32 @@ public class MainActivity extends ActionBarActivity
         buildGoogleApiClient();
         setUpMapIfNeeded();
         setUpButtons();
+        setUpUser();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.global, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_search) {
+        } else if (id == R.id.logout) {
+            logout();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    private void logout() {
+        ParseUser.logOut();
+        Intent intent = new Intent(this, SplashActivity.class);
+        startActivity(intent);
     }
 
     private void setUpButtons() {
@@ -103,14 +131,6 @@ public class MainActivity extends ActionBarActivity
         mMap.setOnInfoWindowClickListener(this);
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setCustomView(R.layout.activity_main_menu);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayShowCustomEnabled(true);
-        setUpUser();
-    }
-
     private void setUpUser() {
         Log.d(TAG, "Setting Up facebook user...");
         final String profilePictureURL = Profile.getCurrentProfile().getProfilePictureUri(64, 64).toString();
@@ -122,12 +142,12 @@ public class MainActivity extends ActionBarActivity
                     final Bitmap bitmap = ImageUtils.getRoundedCornerBitmap(BitmapFactory.decodeStream(url.openConnection().getInputStream()));
                     Log.d(TAG, "Bitmap = " + bitmap);
                     runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              ImageView imageView = (ImageView)getSupportActionBar().getCustomView().findViewById(R.id.profile_picture);
-                              imageView.setImageBitmap(bitmap);
-                          }
-                      }
+                                      @Override
+                                      public void run() {
+                                          ImageView imageView = (ImageView) getSupportActionBar().getCustomView().findViewById(R.id.profile_picture);
+                                          imageView.setImageBitmap(bitmap);
+                                      }
+                                  }
                     );
 
                 } catch (IOException e) {
@@ -136,22 +156,6 @@ public class MainActivity extends ActionBarActivity
                 return null;
             }
         }.execute();
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        restoreActionBar();
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public void newProblem(View view) {

@@ -4,6 +4,7 @@
     <string name="app_id">405475516292685</string>
     <string name="app_name">Crosig</string>
     <string name="settings">Configurações</string>
+    <string name='logout'>Deslogar</string>
     <string name="title_activity_maps">Mapa</string>
     <string name="go_anonymous">Acesso anônimo</string>
     <string name="login_facebook">Entrar com Facebook</string>
@@ -11,7 +12,7 @@
     <string name="problem_name">Qual o problema? (Título)</string>
     <string name="problem_description">Informe uma descrição mais detalhada do problema, por favor =)</string>
     <string name="title_activity_splash">SplashActivity</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">Crosig</string>
     <string name="action_example">ActionExample</string>
     <string name="action_settings">Settings</string>
     <string name="title_section1">Section1</string>
@@ -38,6 +39,6 @@
     <string name="evaluate_problem">Avaliar</string>
     <string name="denounce_problem">Denunciar</string>
     <string name="comment_problem">Comentar</string>
-
+    <string name="search">Buscar</string>
 
 </resources>
