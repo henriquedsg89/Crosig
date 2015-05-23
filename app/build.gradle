@@ -13,7 +13,7 @@ android {
     buildToolsVersion "21.1.2"
     defaultConfig {
         applicationId "com.gh.crosig"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"

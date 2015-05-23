@@ -12,6 +12,8 @@ import com.parse.ParseUser;
 public class UserNotification extends ParseObject {
 
 
+    private ParseUser from;
+
     public static ParseQuery<UserNotification> getQuery() {
         return ParseQuery.getQuery(UserNotification.class);
     }
@@ -32,4 +34,11 @@ public class UserNotification extends ParseObject {
         return (String)get("msg");
     }
 
+    public void setFrom(ParseUser from) {
+        put("from", from);
+    }
+
+    public ParseUser getFrom() {
+        return (ParseUser)get("from");
+    }
 }

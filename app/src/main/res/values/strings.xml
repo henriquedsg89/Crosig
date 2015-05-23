@@ -9,6 +9,7 @@
     <string name="go_anonymous">Acesso anônimo</string>
     <string name="login_facebook">Entrar com Facebook</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search_problem_placeholder">Informe o título para buscar...</string>
     <string name="problem_name">Qual o problema? (Título)</string>
     <string name="problem_description">Informe uma descrição mais detalhada do problema, por favor =)</string>
     <string name="title_activity_splash">SplashActivity</string>
@@ -27,18 +28,23 @@
     <string name="title_activity_new_picture">NewPicture</string>
     <string name="select_problem_type">Tipo de problema...</string>
     <string name="hello_world">Hello world!</string>
-    <string name="follow_problem">Seguir problema?</string>
+    <string name="follow_problem">Seguir</string>
     <string name="retry">Repetir</string>
     <string name="next">Próximo</string>
     <string name="progress_dialog">Aguarde...</string>
-    <string name="title_activity_view_problem">ViewProblem</string>
-    <string name="update_status_problem">Atualizar status</string>
+    <string name="title_activity_view_problem">Observar problema</string>
+    <string name="update_status_problem">Atualizar</string>
     <string name="remove_problem">Remover</string>
-    <string name="unfollow_problem">Deixar de serguir</string>
+    <string name="unfollow_problem">Não serguir</string>
     <string name="suggest_status_problem">Sugerir status</string>
     <string name="evaluate_problem">Avaliar</string>
     <string name="denounce_problem">Denunciar</string>
     <string name="comment_problem">Comentar</string>
     <string name="search">Buscar</string>
+    <string name="title_activity_search">Buscar problema</string>
+    <string name="delete_problem">Excluir</string>
+    <string name="aguardando_resolucao">Aguardando resolução</string>
+    <string name="resolucao_em_andamento">Resolução em andamento</string>
+    <string name="problem_resolvido">Problema resolvido</string>
 
 </resources>

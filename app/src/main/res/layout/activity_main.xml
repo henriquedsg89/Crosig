@@ -1,4 +1,3 @@
-<!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- mapa -->
     <fragment
         android:id="@+id/activity_map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -14,20 +12,21 @@
         android:layout_height="match_parent"
         tools:layout="@layout/dummy_maplayout"/>
 
-    <FrameLayout android:id="@+id/container" android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="10dp"/>
-
-    <ImageView
-        android:id="@+id/profile_picture"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="top|start"/>
+    <FrameLayout android:id="@+id/container" android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0"
+        android:background="#000" />
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
+
+        <ImageView
+            android:id="@+id/profile_picture"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="top|start"/>
 
         <ImageButton
             android:layout_width="wrap_content"

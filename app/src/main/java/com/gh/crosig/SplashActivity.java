@@ -6,13 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.gh.crosig.model.Problem;
-import com.gh.crosig.model.SuggestedStatus;
+import com.facebook.GraphRequestAsyncTask;
+import com.facebook.Profile;
 import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.Arrays;
@@ -30,11 +28,6 @@ public class SplashActivity extends Activity {
     }
 
     private void initDB() {
-        ParseObject.registerSubclass(Problem.class);
-        ParseObject.registerSubclass(SuggestedStatus.class);
-        Parse.initialize(this, "k4C4iDQPonsBtWzZeOyzsxQrYpfn7ODBilu5v2XC", "80AjPLWpKuTZs0oI4A8Tb9wOXuWPzzHWoCS40ZGd");
-
-        ParseFacebookUtils.initialize(getApplicationContext());
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null && ParseFacebookUtils.isLinked(currentUser)) {
             startLogged();
@@ -49,26 +42,38 @@ public class SplashActivity extends Activity {
 
     public void loginFb(View view) {
         ParseFacebookUtils.logInWithReadPermissionsInBackground(this, Arrays.asList("public_profile", "email"),
-            new LogInCallback() {
-                @Override
-                public void done(ParseUser parseUser, ParseException e) {
-                    if (parseUser == null) {
-                        Log.d(TAG, "Usuário cancelou login.");
-                    } else {
-                        startLogged();
+                new LogInCallback() {
+                    @Override
+                    public void done(ParseUser parseUser, ParseException e) {
+                        if (parseUser == null) {
+                            Log.d(TAG, "Usuário cancelou login.");
+                        } else {
+                            if (parseUser.isNew()) {
+                                loadFBProfile();
+                            }
+                            startLogged();
+                        }
                     }
-                }
-            });
+                });
+
+    }
+
+    private void loadFBProfile() {
+        ParseUser.getCurrentUser().put("name", Profile.getCurrentProfile().getName());
+        ParseUser.getCurrentUser().saveEventually();
+
     }
 
     private void startLogged() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        finish();
     }
 
     public void startAnonymous(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("anonymous", true);
-        this.startActivity(intent);
+        startActivity(intent);
+        finish();
     }
 }

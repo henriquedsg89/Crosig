@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import com.facebook.Profile;
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.model.ProblemFollow;
+import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.ImageUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,7 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
-import com.parse.ParseFacebookUtils;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -60,9 +62,12 @@ public class MainActivity extends ActionBarActivity
     private static final String TAG = "MainActivity";
 
     private static final int ZOOM = 16;
+
+    public static Problem selectedProblem;
+    public static Location mLastLocation, previousLocation;
+    public static boolean followingCurrentProblem = false;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
-    private Location mLastLocation, previousLocation;
     private Map<String, Marker> markers = new HashMap<>();
     private Map<Marker, Problem> markersProblems = new HashMap<>();
 
@@ -70,16 +75,22 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (ParseUser.getCurrentUser() == null && !getIntent().getBooleanExtra("anonymous", false)) {
+            Intent intent = new Intent(this, SplashActivity.class);
+            startActivity(intent);
+        }
+
         buildGoogleApiClient();
         setUpMapIfNeeded();
         setUpButtons();
-        setUpUser();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.global, menu);
+        setUpUser();
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -87,18 +98,21 @@ public class MainActivity extends ActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_search) {
+            openSearch();
         } else if (id == R.id.logout) {
             logout();
         }
         return super.onOptionsItemSelected(item);
     }
 
-
+    private void openSearch() {
+        Intent intent = new Intent(this, SearchActivity.class);
+        intent.putExtra("location", mLastLocation);
+        startActivity(intent);
+    }
 
     private void logout() {
-        ParseUser.logOut();
-        Intent intent = new Intent(this, SplashActivity.class);
-        startActivity(intent);
+        goToSplash();
     }
 
     private void setUpButtons() {
@@ -133,6 +147,10 @@ public class MainActivity extends ActionBarActivity
 
     private void setUpUser() {
         Log.d(TAG, "Setting Up facebook user...");
+        if (Profile.getCurrentProfile() == null || Profile.getCurrentProfile().getProfilePictureUri(64, 64) == null) {
+            goToSplash();
+            return;
+        }
         final String profilePictureURL = Profile.getCurrentProfile().getProfilePictureUri(64, 64).toString();
         new AsyncTask<String, Void, Void>() {
             @Override
@@ -144,7 +162,7 @@ public class MainActivity extends ActionBarActivity
                     runOnUiThread(new Runnable() {
                                       @Override
                                       public void run() {
-                                          ImageView imageView = (ImageView) getSupportActionBar().getCustomView().findViewById(R.id.profile_picture);
+                                          ImageView imageView = (ImageView) findViewById(R.id.profile_picture);
                                           imageView.setImageBitmap(bitmap);
                                       }
                                   }
@@ -156,6 +174,13 @@ public class MainActivity extends ActionBarActivity
                 return null;
             }
         }.execute();
+    }
+
+    private void goToSplash() {
+        ParseUser.logOut();
+        Intent intent = new Intent(this, SplashActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void newProblem(View view) {
@@ -264,9 +289,8 @@ public class MainActivity extends ActionBarActivity
                 Log.d(TAG, String.format("Found %d problems", problems.size()));
                 Set<String> toKeep = new HashSet<String>();
                 for (Problem problem : problems) {
-                    ParseGeoPoint loc = problem.getParseGeoPoint("location");
-
-                    BitmapDescriptor markerIcon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);
+                    ParseGeoPoint loc = problem.getLocation();
+                    BitmapDescriptor markerIcon = BitmapDescriptorFactory.defaultMarker(CommonUtils.getColor(MainActivity.this, problem.getStatus()));
                     MarkerOptions opts = new MarkerOptions().title(problem.getName())
                             .snippet(problem.getType())
                             .position(new LatLng(loc.getLatitude(), loc.getLongitude()))
@@ -285,16 +309,36 @@ public class MainActivity extends ActionBarActivity
                     }
                 }
 
+                if (problems.isEmpty()) {
+                    for (Marker m : markers.values()) {
+                        m.remove();
+                    }
+                }
             }
         });
     }
 
-
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Problem problem = markersProblems.get(marker);
-        Intent intent = new Intent(this, ViewProblem.class);
-        intent.putExtra("problem", problem.getObjectId());
-        startActivity(intent);
+        followingCurrentProblem = false;
+        selectedProblem = markersProblems.get(marker);
+        ParseQuery<ProblemFollow> followParseQuery = ProblemFollow.getQuery();
+        followParseQuery.whereEqualTo("user", ParseUser.getCurrentUser());
+        followParseQuery.whereEqualTo("problem", selectedProblem);
+        followParseQuery.findInBackground(new FindCallback<ProblemFollow>() {
+            @Override
+            public void done(List<ProblemFollow> problemFollows, ParseException e) {
+                for (ProblemFollow p : problemFollows) {
+                    if (p.getProblem().getObjectId().equals(selectedProblem.getObjectId())) {
+                        MainActivity.followingCurrentProblem = true;
+                        break;
+                    }
+                }
+                Intent intent = new Intent(MainActivity.this, ViewProblemActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
+
 }

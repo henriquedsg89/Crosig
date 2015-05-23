@@ -4,6 +4,7 @@ import com.gh.crosig.SuggestStatusDlg;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 /**
  * Created by henrique on 05/05/15.
@@ -24,11 +25,12 @@ public class SuggestedStatus extends ParseObject {
         return (Problem)get("problem");
     }
 
-    public void setStatus(int status) {
+    public void setStatus(String status) {
         put("status", status);
     }
 
-    public int getStatus() {
-        return (int)get("status");
+    public String getStatus() {
+        return (String)get("status");
     }
+
 }

@@ -1,6 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools" tools:context="com.gh.crosig.ViewProblem">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
+    xmlns:tools="http://schemas.android.com/tools" tools:context="com.gh.crosig.ViewProblemActivity">
+    <item android:id="@+id/view_problem_suggest_status" android:title="@string/suggest_status_problem"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/view_problem_update_status" android:title="@string/update_status_problem"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/view_follow" android:title="@string/follow_problem"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/view_unfollow" android:title="@string/unfollow_problem"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/view_problem_delete_problem" android:title="@string/delete_problem"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gh.crosig" >
+    package="com.gh.crosig">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -25,15 +25,11 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+        android:name=".Application">
         <activity
             android:name=".SplashActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:label="@string/app_name">
         </activity>
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -53,14 +49,21 @@
 
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" />
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".NewProblem"
             android:label="@string/new_problem" />
         <activity
-            android:name=".ViewProblem"
-            android:label="@string/title_activity_view_problem" >
-        </activity>
+            android:name=".ViewProblemActivity"
+            android:label="@string/title_activity_view_problem" />
+        <activity
+            android:name=".SearchActivity"
+            android:label="@string/title_activity_search" />
     </application>
 
 </manifest>

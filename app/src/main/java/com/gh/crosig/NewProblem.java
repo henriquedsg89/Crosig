@@ -4,7 +4,6 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.location.Location;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,15 +17,12 @@ import android.widget.Toast;
 
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.utils.ImageUtils;
-import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseImageView;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-
-import java.io.ByteArrayOutputStream;
 
 public class NewProblem extends ActionBarActivity {
 
@@ -43,6 +39,7 @@ public class NewProblem extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.new_problem);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getFragmentManager().beginTransaction().add(R.id.new_problem_container, new NewPhoto()).commit();
         takePicture(null);
     }
@@ -102,22 +99,17 @@ public class NewProblem extends ActionBarActivity {
         problem.setName(problemName.getText().toString());
         problem.setDesc(problemDesc.getText().toString());
         problem.setType(problemType.getSelectedItem().toString());
+        problem.setStatus(getResources().getStringArray(R.array.problem_status)[0]);
         problem.setParseGeoPoint(new ParseGeoPoint(location.getLatitude(), location.getLongitude()));
 
-        Toast.makeText(getApplicationContext(), String.format("Salvando...\n%s", problem.getName()),
+        Toast.makeText(getBaseContext(), String.format("Salvando...\n%s", problem.getName()),
                 Toast.LENGTH_LONG).show();
-
-        ParseACL acl = new ParseACL();
-        acl.setPublicReadAccess(true);
 
         final ParseFile parseFile = new ParseFile("test.jpg",
                 ImageUtils.bitmapToByteArray(imageBitmap));
         parseFile.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                ParseACL acl = new ParseACL();
-                acl.setPublicReadAccess(true);
-                problem.setACL(acl);
                 problem.setImage(parseFile);
                 problem.saveInBackground(new SaveCallback() {
                     @Override
@@ -127,6 +119,7 @@ public class NewProblem extends ActionBarActivity {
                 });
             }
         });
+
     }
 
 

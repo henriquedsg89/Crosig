@@ -3,6 +3,8 @@ package com.gh.crosig.model;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
@@ -12,6 +14,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Enumeration;
 
 /**
  * Created by henrique on 05/05/15.
@@ -47,6 +50,10 @@ public class Problem extends ParseObject {
         put("location", location);
     }
 
+    public void setStatus(String status) {
+        put("status", status);
+    }
+
     public String getName() {
         return (String)get("name");
     }
@@ -69,7 +76,8 @@ public class Problem extends ParseObject {
         return (ParseGeoPoint)get("location");
     }
 
-    public void setStatus(int status) {
-        put("status", status);
+    public String getStatus() {
+        return (String) get("status");
     }
+
 }
