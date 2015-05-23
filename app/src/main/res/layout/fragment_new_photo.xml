@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
     android:gravity="bottom"
     android:orientation="vertical"
-    tools:context="com.gh.crosig.NewPhoto"
+    tools:context="com.gh.crosig.fragments.NewPhoto"
     android:weightSum="1">
 
     <LinearLayout

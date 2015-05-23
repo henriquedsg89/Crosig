@@ -1,4 +1,4 @@
-package com.gh.crosig;
+package com.gh.crosig.activities;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.facebook.Profile;
+import com.gh.crosig.R;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.utils.CommonUtils;
@@ -77,7 +78,7 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
 
         if (ParseUser.getCurrentUser() == null && !getIntent().getBooleanExtra("anonymous", false)) {
-            Intent intent = new Intent(this, SplashActivity.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
 
@@ -178,7 +179,7 @@ public class MainActivity extends ActionBarActivity
 
     private void goToSplash() {
         ParseUser.logOut();
-        Intent intent = new Intent(this, SplashActivity.class);
+        Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
         finish();
     }
@@ -190,7 +191,7 @@ public class MainActivity extends ActionBarActivity
             return;
         }
         Log.i(TAG, "Click at new problem icon!");
-        Intent intent = new Intent(this, NewProblem.class);
+        Intent intent = new Intent(this, NewProblemActivity.class);
         intent.putExtra(INTENT_EXTRA_LOCATION, mLastLocation);
         startActivity(intent);
     }

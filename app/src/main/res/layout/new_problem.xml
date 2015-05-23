@@ -4,7 +4,7 @@
     android:id="@+id/new_problem_container"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    tools:context="com.gh.crosig.NewProblem">
+    tools:context="com.gh.crosig.activities.NewProblemActivity">
 
 
 </FrameLayout>

@@ -1,9 +1,6 @@
-package com.gh.crosig;
+package com.gh.crosig.activities;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
@@ -17,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.gh.crosig.R;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.DateUtils;

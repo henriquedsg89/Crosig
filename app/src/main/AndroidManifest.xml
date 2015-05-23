@@ -28,7 +28,7 @@
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
         android:name=".Application">
         <activity
-            android:name=".SplashActivity"
+            android:name=".activities.LoginActivity"
             android:label="@string/app_name">
         </activity>
         <activity
@@ -48,7 +48,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:label="@string/title_activity_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,13 +56,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NewProblem"
+            android:name=".activities.NewProblemActivity"
             android:label="@string/new_problem" />
         <activity
-            android:name=".ViewProblemActivity"
+            android:name=".activities.ViewProblemActivity"
             android:label="@string/title_activity_view_problem" />
         <activity
-            android:name=".SearchActivity"
+            android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search" />
     </application>
 

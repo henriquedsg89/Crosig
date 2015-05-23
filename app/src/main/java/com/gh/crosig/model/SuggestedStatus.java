@@ -1,10 +1,8 @@
 package com.gh.crosig.model;
 
-import com.gh.crosig.SuggestStatusDlg;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 /**
  * Created by henrique on 05/05/15.

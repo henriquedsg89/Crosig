@@ -1,4 +1,4 @@
-package com.gh.crosig;
+package com.gh.crosig.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -10,6 +10,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.gh.crosig.R;
+import com.gh.crosig.dialogs.SuggestStatusDlg;
+import com.gh.crosig.dialogs.UpdateStatusDlg;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
@@ -17,10 +20,8 @@ import com.gh.crosig.model.UserNotification;
 import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.DateUtils;
 import com.parse.FindCallback;
-import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseImageView;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
