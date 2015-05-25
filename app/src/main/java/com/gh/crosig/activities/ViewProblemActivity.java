@@ -19,6 +19,7 @@ import com.gh.crosig.R;
 import com.gh.crosig.dialogs.CommentDlg;
 import com.gh.crosig.dialogs.SuggestStatusDlg;
 import com.gh.crosig.dialogs.UpdateStatusDlg;
+import com.gh.crosig.dialogs.VeracityDlg;
 import com.gh.crosig.model.Comment;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
@@ -38,7 +39,7 @@ import java.util.List;
 
 public class ViewProblemActivity extends ActionBarActivity implements
         SuggestStatusDlg.SuggestStatusDlgListener, UpdateStatusDlg.UpdateStatusDlgListener,
-        CommentDlg.CommentDlgListener {
+        CommentDlg.CommentDlgListener, VeracityDlg.VeracityDlgListener {
 
     private static final String TAG = "ViewProblemActivity";
     private Problem currentProblem;
@@ -225,7 +226,8 @@ public class ViewProblemActivity extends ActionBarActivity implements
     }
 
     public void evaluateClick(View v) {
-
+        VeracityDlg dlg = new VeracityDlg();
+        dlg.show(getFragmentManager(), "VeracityDlg");
     }
 
     @Override
@@ -242,8 +244,10 @@ public class ViewProblemActivity extends ActionBarActivity implements
             e.printStackTrace();
         }
 
-        ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
-        follow.saveInBackground();
+        if (!ProblemFollow.isFollowingProblem(currentProblem, ParseUser.getCurrentUser())) {
+            ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
+            follow.saveInBackground();
+        }
 
         UserNotification userNotification = new UserNotification();
         userNotification.setMsg(ParseUser.getCurrentUser().getUsername() +
@@ -303,6 +307,11 @@ public class ViewProblemActivity extends ActionBarActivity implements
         commentList.setAdapter(commentAdapter);
         commentAdapter.loadObjects();
         Log.d(TAG, "Loaded comments for " + currentProblem.getName());
+
+    }
+
+    @Override
+    public void onPickVeracity(boolean isVeridic) {
 
     }
 }

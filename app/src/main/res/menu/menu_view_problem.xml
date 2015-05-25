@@ -9,6 +9,8 @@
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/view_unfollow" android:title="@string/unfollow_problem"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/view_problem_denounce" android:title="@string/denounce_problem"
+        android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/view_problem_delete_problem" android:title="@string/delete_problem"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>
