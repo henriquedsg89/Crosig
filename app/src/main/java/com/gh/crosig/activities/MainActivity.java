@@ -12,14 +12,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.Profile;
 import com.gh.crosig.R;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
+import com.gh.crosig.model.UserNotification;
 import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.ImageUtils;
 import com.google.android.gms.common.ConnectionResult;
@@ -36,11 +37,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseImageView;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -67,10 +72,13 @@ public class MainActivity extends ActionBarActivity
     public static Problem selectedProblem;
     public static Location mLastLocation, previousLocation;
     public static boolean followingCurrentProblem = false;
+
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private Map<String, Marker> markers = new HashMap<>();
     private Map<Marker, Problem> markersProblems = new HashMap<>();
+    private TextView notificationCounter;
+    private ParseImageView profilePicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,32 +86,66 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
 
         if (ParseUser.getCurrentUser() == null && !getIntent().getBooleanExtra("anonymous", false)) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            goToSplash();
+            return;
         }
 
         buildGoogleApiClient();
         setUpMapIfNeeded();
-        setUpButtons();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.global, menu);
-        setUpUser();
+
+        MenuItem alertItem = menu.findItem(R.id.action_alert);
+        MenuItem profileItem = menu.findItem(R.id.profile_action);
+
+        setUpNotificationCounter(alertItem);
+        setUpProfile(profileItem);
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void setUpNotificationCounter(MenuItem alertItem) {
+        ImageView notifImage = (ImageView) alertItem.getActionView().findViewById(R.id.notification_image);
+        notifImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNotification();
+            }
+        });
+
+        notificationCounter = (TextView) alertItem.getActionView().findViewById(R.id.action_notification_count);
+        notificationCounter.setText("0");
+        ParseQuery<UserNotification> query = UserNotification.getQuery();
+        query.whereEqualTo("user", ParseUser.getCurrentUser());
+        query.countInBackground(new CountCallback() {
+            @Override
+            public void done(int i, ParseException e) {
+                notificationCounter.setText(String.valueOf(i));
+            }
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_search) {
+        if (id == R.id.action_new_problem) {
+            goNewProblem();
+        } else if (id == R.id.action_search) {
             openSearch();
-        } else if (id == R.id.logout) {
-            logout();
+        } else if (id == R.id.action_alert) {
+            openNotification();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openNotification() {
+        Log.d(TAG, "Creating User Notification Activity");
+        Intent intent = new Intent(this, UserNotificationActivity.class);
+        startActivity(intent);
     }
 
     private void openSearch() {
@@ -116,16 +158,6 @@ public class MainActivity extends ActionBarActivity
         goToSplash();
     }
 
-    private void setUpButtons() {
-        ImageButton npBtn = (ImageButton) findViewById(R.id.new_problem);
-        npBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                newProblem(v);
-            }
-        });
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -134,7 +166,8 @@ public class MainActivity extends ActionBarActivity
 
     private void setUpMapIfNeeded() {
         Log.d(TAG, "Setting Up Google Maps...");
-        SupportMapFragment mapFrag = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.activity_map));
+        SupportMapFragment mapFrag = ((SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map_fragment));
         mapFrag.getMapAsync(this);
     }
 
@@ -146,35 +179,23 @@ public class MainActivity extends ActionBarActivity
         mMap.setOnInfoWindowClickListener(this);
     }
 
-    private void setUpUser() {
+    private void setUpProfile(MenuItem profileItem) {
         Log.d(TAG, "Setting Up facebook user...");
-        if (Profile.getCurrentProfile() == null || Profile.getCurrentProfile().getProfilePictureUri(64, 64) == null) {
-            goToSplash();
+        if (Profile.getCurrentProfile() == null) {
             return;
         }
-        final String profilePictureURL = Profile.getCurrentProfile().getProfilePictureUri(64, 64).toString();
-        new AsyncTask<String, Void, Void>() {
-            @Override
-            protected Void doInBackground(String... params) {
-                try {
-                    URL url = new URL(profilePictureURL);
-                    final Bitmap bitmap = ImageUtils.getRoundedCornerBitmap(BitmapFactory.decodeStream(url.openConnection().getInputStream()));
-                    Log.d(TAG, "Bitmap = " + bitmap);
-                    runOnUiThread(new Runnable() {
-                                      @Override
-                                      public void run() {
-                                          ImageView imageView = (ImageView) findViewById(R.id.profile_picture);
-                                          imageView.setImageBitmap(bitmap);
-                                      }
-                                  }
-                    );
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
+        profilePicture = (ParseImageView) profileItem.getActionView().findViewById(R.id.profile_picture);
+        profilePicture.setParseFile(ParseUser.getCurrentUser().getParseFile("profilePicture"));
+        profilePicture.loadInBackground();
+        profilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
             }
-        }.execute();
+        });
+
     }
 
     private void goToSplash() {
@@ -184,7 +205,7 @@ public class MainActivity extends ActionBarActivity
         finish();
     }
 
-    public void newProblem(View view) {
+    public void goNewProblem() {
         if (mLastLocation == null) {
             Toast.makeText(MainActivity.this,
                     "Por favor ative a localização do seu aparelho e tente novamente.", Toast.LENGTH_LONG).show();
@@ -289,17 +310,22 @@ public class MainActivity extends ActionBarActivity
             public void done(List<Problem> problems, com.parse.ParseException e) {
                 Log.d(TAG, String.format("Found %d problems", problems.size()));
                 Set<String> toKeep = new HashSet<String>();
+
                 for (Problem problem : problems) {
                     ParseGeoPoint loc = problem.getLocation();
-                    BitmapDescriptor markerIcon = BitmapDescriptorFactory.defaultMarker(CommonUtils.getColor(MainActivity.this, problem.getStatus()));
+
+                    BitmapDescriptor markerIconColor = BitmapDescriptorFactory
+                            .defaultMarker(CommonUtils.getColor(MainActivity.this,
+                                    problem.getStatus()));
                     MarkerOptions opts = new MarkerOptions().title(problem.getName())
                             .snippet(problem.getType())
                             .position(new LatLng(loc.getLatitude(), loc.getLongitude()))
                             .alpha(0.7f)
-                            .icon(markerIcon);
+                            .icon(markerIconColor);
                     Marker marker = mMap.addMarker(opts);
                     markersProblems.put(marker, problem);
                     markers.put(problem.getObjectId(), marker);
+
                     toKeep.add(problem.getObjectId());
                 }
 
@@ -339,7 +365,41 @@ public class MainActivity extends ActionBarActivity
                 startActivity(intent);
             }
         });
+    }
 
+    private void loadFBProfile() {
+        final String profilePictureURL = Profile.getCurrentProfile().getProfilePictureUri(120, 120).toString();
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    URL url = new URL(profilePictureURL);
+                    final Bitmap bitmap = ImageUtils.getRoundedCornerBitmap(BitmapFactory
+                            .decodeStream(url.openConnection().getInputStream()));
+                    if (ParseUser.getCurrentUser().getParseFile("profilePicture") == null) {
+                        final ParseFile parseFile = new ParseFile("profilePicture_" + ParseUser.getCurrentUser().getObjectId() + ".jpg",
+                                ImageUtils.bitmapToByteArray(bitmap));
+                        parseFile.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                profilePicture.setParseFile(parseFile);
+                                profilePicture.loadInBackground();
+                                ParseUser.getCurrentUser().put("profilePicture", parseFile);
+                                ParseUser.getCurrentUser().put("username", Profile.getCurrentProfile().getName());
+                                if (ParseUser.getCurrentUser().get("score") == null) {
+                                    ParseUser.getCurrentUser().put("score", 0);
+                                }
+                                ParseUser.getCurrentUser().saveInBackground();
+                            }
+                        });
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
     }
 
 }

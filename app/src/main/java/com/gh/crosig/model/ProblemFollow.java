@@ -18,23 +18,29 @@ public class ProblemFollow extends ParseObject {
         return f;
     }
 
+    public static ParseQuery<ProblemFollow> getQuery() {
+        return ParseQuery.getQuery(ProblemFollow.class);
+    }
+
+    public static boolean isFollowingProblem(Problem currentProblem, ParseUser currentUser) {
+        ParseQuery<ProblemFollow> q = getQuery();
+
+        return false;
+    }
+
+    public Problem getProblem() {
+        return (Problem) get("problem");
+    }
+
     public void setProblem(Problem problem) {
         put("problem", problem);
     }
 
-    public Problem getProblem() {
-        return (Problem)get("problem");
+    public ParseUser getUser() {
+        return (ParseUser) get("user");
     }
 
     public void setUser(ParseUser user) {
         put("user", user);
-    }
-
-    public ParseUser getUser() {
-        return (ParseUser)get("user");
-    }
-
-    public static ParseQuery<ProblemFollow> getQuery() {
-        return ParseQuery.getQuery(ProblemFollow.class);
     }
 }

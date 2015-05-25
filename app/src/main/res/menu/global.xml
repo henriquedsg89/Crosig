@@ -3,11 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
-    <item android:id="@+id/action_search"
+
+    <item
+        android:id="@+id/action_new_problem"
+        android:icon="@drawable/ic_action_new_picture"
+        android:title="@string/new_problem"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_search"
         android:icon="@drawable/ic_action_search"
         android:title="@string/search"
-        app:showAsAction="ifRoom"  />
-    <item android:id="@+id/logout"
-        android:title="@string/logout"
-        app:showAsAction="never"/>
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_alert"
+        android:icon="@drawable/ic_action_read"
+        android:title="@string/notification"
+        app:actionLayout="@layout/notification_layout"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/profile_action"
+        android:title="@string/profile_action"
+        app:actionLayout="@layout/profile_action_layout"
+        app:showAsAction="always"/>
 </menu>

@@ -1,5 +1,6 @@
 package com.gh.crosig;
 
+import com.gh.crosig.model.Comment;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
@@ -21,6 +22,7 @@ public class Application extends android.app.Application {
         ParseObject.registerSubclass(SuggestedStatus.class);
         ParseObject.registerSubclass(UserNotification.class);
         ParseObject.registerSubclass(ProblemFollow.class);
+        ParseObject.registerSubclass(Comment.class);
 
         ParseACL defaultACL = new ParseACL();
         defaultACL.setPublicReadAccess(true);

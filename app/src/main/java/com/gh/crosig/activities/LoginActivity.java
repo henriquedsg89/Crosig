@@ -2,17 +2,25 @@ package com.gh.crosig.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import com.facebook.Profile;
 import com.gh.crosig.R;
+import com.gh.crosig.utils.ImageUtils;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 
 
@@ -48,9 +56,6 @@ public class LoginActivity extends Activity {
                         if (parseUser == null) {
                             Log.d(TAG, "Usuário cancelou login.");
                         } else {
-                            if (parseUser.isNew()) {
-                                loadFBProfile();
-                            }
                             startLogged();
                         }
                     }
@@ -58,11 +63,6 @@ public class LoginActivity extends Activity {
 
     }
 
-    private void loadFBProfile() {
-        ParseUser.getCurrentUser().put("name", Profile.getCurrentProfile().getName());
-        ParseUser.getCurrentUser().saveEventually();
-
-    }
 
     private void startLogged() {
         Intent intent = new Intent(this, MainActivity.class);

@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <fragment
-        android:id="@+id/activity_map"
+        android:id="@+id/map_fragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,31 +16,5 @@
         android:layout_height="wrap_content"
         android:alpha="0"
         android:background="#000" />
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
-
-        <ImageView
-            android:id="@+id/profile_picture"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="top|start"/>
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/new_problem"
-            android:clickable="true"
-            android:src="@drawable/ic_action_place"
-            android:background="#104E8B"
-            android:padding="10dp"
-            android:baselineAlignBottom="true"
-            android:cropToPadding="false"
-            android:layout_gravity="end"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
-    </RelativeLayout>
 
 </RelativeLayout>

@@ -2,17 +2,24 @@ package com.gh.crosig.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gh.crosig.R;
+import com.gh.crosig.dialogs.CommentDlg;
 import com.gh.crosig.dialogs.SuggestStatusDlg;
 import com.gh.crosig.dialogs.UpdateStatusDlg;
+import com.gh.crosig.model.Comment;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
@@ -21,17 +28,21 @@ import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.DateUtils;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseImageView;
 import com.parse.ParseQuery;
+import com.parse.ParseQueryAdapter;
 import com.parse.ParseUser;
 
 import java.util.List;
 
 public class ViewProblemActivity extends ActionBarActivity implements
-        SuggestStatusDlg.SuggestStatusDlgListener, UpdateStatusDlg.UpdateStatusDlgListener {
+        SuggestStatusDlg.SuggestStatusDlgListener, UpdateStatusDlg.UpdateStatusDlgListener,
+        CommentDlg.CommentDlgListener {
 
     private static final String TAG = "ViewProblemActivity";
     private Problem currentProblem;
+    private ParseQueryAdapter<Comment> commentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +72,7 @@ public class ViewProblemActivity extends ActionBarActivity implements
         status.setText(currentProblem.getStatus());
         status.setTextColor(CommonUtils.getColorInt(this, currentProblem.getStatus()));
 
-
-        Log.d(TAG, "Loaded problem: " + currentProblem.getType());
+        setUpCommentList();
     }
 
     @Override
@@ -186,13 +196,17 @@ public class ViewProblemActivity extends ActionBarActivity implements
         suggestedStatus.setProblem(currentProblem);
         suggestedStatus.saveInBackground();
 
-        ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
-        follow.saveInBackground();
+        if (!ProblemFollow.isFollowingProblem(currentProblem, ParseUser.getCurrentUser())) {
+            ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
+            follow.saveInBackground();
+        }
 
         UserNotification userNotification = new UserNotification();
-        userNotification.setMsg(currentProblem.getUser().get("name") + ": sugeriu o status '" + status + "'");
-        userNotification.setUser(currentProblem.getUser());
+        userNotification.setMsg(ParseUser.getCurrentUser().getUsername()
+                + ": sugeriu o status '" + status + "'");
+        userNotification.setTo(currentProblem.getUser());
         userNotification.setFrom(ParseUser.getCurrentUser());
+        userNotification.setProblem(currentProblem);
         userNotification.saveInBackground();
 
         finish();
@@ -203,5 +217,92 @@ public class ViewProblemActivity extends ActionBarActivity implements
         currentProblem.setStatus(status);
         currentProblem.saveInBackground();
         finish();
+    }
+
+    public void commentClick(View v) {
+        CommentDlg dlg = new CommentDlg();
+        dlg.show(getFragmentManager(), "CommentDlg");
+    }
+
+    public void evaluateClick(View v) {
+
+    }
+
+    @Override
+    public void onUserCommented(String comment) {
+        Comment c = new Comment();
+        c.setComment(comment);
+        c.setProblem(currentProblem);
+        c.setUser(ParseUser.getCurrentUser());
+        try {
+            c.save();
+            Toast.makeText(getApplicationContext(), "Comentário feito!", Toast.LENGTH_SHORT).show();
+            commentAdapter.loadObjects();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
+        follow.saveInBackground();
+
+        UserNotification userNotification = new UserNotification();
+        userNotification.setMsg(ParseUser.getCurrentUser().getUsername() +
+                " comentou no problema " + currentProblem.getName().substring(0, 10) + "...");
+        userNotification.setTo(currentProblem.getUser());
+        userNotification.setFrom(ParseUser.getCurrentUser());
+        userNotification.setProblem(currentProblem);
+        userNotification.saveInBackground();
+
+    }
+
+    private void setUpCommentList() {
+        final ParseQueryAdapter.QueryFactory<Comment> factory =
+                new ParseQueryAdapter.QueryFactory<Comment>() {
+                    public ParseQuery<Comment> create() {
+                        ParseQuery<Comment> query = Comment.getQuery();
+                        query.whereEqualTo("problem", currentProblem);
+                        query.include("user");
+                        query.orderByAscending("createdAt");
+                        return query;
+                    }
+                };
+        commentAdapter = new ParseQueryAdapter<Comment>(this, factory) {
+            @Override
+            public View getItemView(Comment comment, View view, ViewGroup parent) {
+                Log.d(TAG, "Item => " + comment.toString());
+                if (view == null) {
+                    view = View.inflate(getContext(), R.layout.comment_list_view_item, null);
+                }
+
+                ParseImageView parseImageView = (ParseImageView) view.findViewById(R.id.view_comment_profile_picture);
+                TextView authorView = (TextView) view.findViewById(R.id.comment_author);
+                TextView dateView = (TextView) view.findViewById(R.id.comment_date);
+                TextView textView = (TextView) view.findViewById(R.id.comment_text);
+
+                ParseUser user = comment.getUser();
+                ParseFile pp = user.getParseFile("profilePicture");
+
+                parseImageView.setParseFile(pp);
+                parseImageView.loadInBackground();
+                authorView.setText(user.getUsername());
+                dateView.setText(DateUtils.dateToStr(comment.getCreatedAt()));
+                textView.setText(comment.getComment());
+
+                return view;
+            }
+        };
+        commentAdapter.setTextKey("name");
+        commentAdapter.setPaginationEnabled(true);
+
+        TextView header = new TextView(getApplicationContext());
+        header.setText(R.string.comments);
+        header.setTextColor(Color.BLACK);
+
+        ListView commentList = (ListView) findViewById(R.id.view_list_view_comment);
+        commentList.addHeaderView(header);
+        commentList.setAdapter(commentAdapter);
+        commentAdapter.loadObjects();
+        Log.d(TAG, "Loaded comments for " + currentProblem.getName());
+
     }
 }

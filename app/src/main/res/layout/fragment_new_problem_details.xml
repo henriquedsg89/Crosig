@@ -58,7 +58,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:onClick="cancel"
-                    android:text="Cancel" />
+                    android:text="@string/cancel" />
 
                 <Button
                     android:id="@+id/action_bar_button_ok"
@@ -66,7 +66,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:onClick="saveProblem"
-                    android:text="Save" />
+                    android:text="@string/save" />
 
             </LinearLayout>
         </LinearLayout>
