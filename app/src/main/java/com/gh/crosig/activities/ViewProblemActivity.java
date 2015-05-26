@@ -25,6 +25,7 @@ import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
 import com.gh.crosig.model.UserNotification;
+import com.gh.crosig.model.Veracity;
 import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.DateUtils;
 import com.parse.FindCallback;
@@ -312,6 +313,8 @@ public class ViewProblemActivity extends ActionBarActivity implements
 
     @Override
     public void onPickVeracity(boolean isVeridic) {
+        Veracity veracity = new Veracity();
+        veracity.get
 
     }
 }
