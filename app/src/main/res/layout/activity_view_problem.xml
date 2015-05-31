@@ -63,9 +63,11 @@
             android:paddingTop="10dp" />
 
         <RelativeLayout
+            android:id="@+id/view_actions"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:minHeight="120dp">
 
             <Button
                 android:id="@+id/view_comment"

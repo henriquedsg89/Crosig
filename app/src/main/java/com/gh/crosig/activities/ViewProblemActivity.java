@@ -11,19 +11,23 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gh.crosig.R;
 import com.gh.crosig.dialogs.CommentDlg;
+import com.gh.crosig.dialogs.DenounceDlg;
 import com.gh.crosig.dialogs.SuggestStatusDlg;
 import com.gh.crosig.dialogs.UpdateStatusDlg;
 import com.gh.crosig.dialogs.VeracityDlg;
 import com.gh.crosig.model.Comment;
+import com.gh.crosig.model.Denounce;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
+import com.gh.crosig.model.UserDetail;
 import com.gh.crosig.model.UserNotification;
 import com.gh.crosig.model.Veracity;
 import com.gh.crosig.utils.CommonUtils;
@@ -40,7 +44,8 @@ import java.util.List;
 
 public class ViewProblemActivity extends ActionBarActivity implements
         SuggestStatusDlg.SuggestStatusDlgListener, UpdateStatusDlg.UpdateStatusDlgListener,
-        CommentDlg.CommentDlgListener, VeracityDlg.VeracityDlgListener {
+        CommentDlg.CommentDlgListener, VeracityDlg.VeracityDlgListener,
+        DenounceDlg.DenounceDlgListener {
 
     private static final String TAG = "ViewProblemActivity";
     private Problem currentProblem;
@@ -52,7 +57,13 @@ public class ViewProblemActivity extends ActionBarActivity implements
         setContentView(R.layout.activity_view_problem);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        currentProblem = MainActivity.selectedProblem;
+        try {
+            currentProblem = MainActivity.selectedProblem;
+            currentProblem.fetchIfNeeded();
+            currentProblem.getUser().fetchIfNeeded();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         ParseImageView piv = (ParseImageView) findViewById(R.id.view_problem_image);
         piv.setParseFile(currentProblem.getImage());
@@ -73,6 +84,29 @@ public class ViewProblemActivity extends ActionBarActivity implements
         TextView status = (TextView) findViewById(R.id.view_problem_status);
         status.setText(currentProblem.getStatus());
         status.setTextColor(CommonUtils.getColorInt(this, currentProblem.getStatus()));
+
+        final Button evaluateBtn = (Button) findViewById(R.id.view_evaluate);
+        if (Boolean.TRUE.equals(currentProblem.getVeridicStatus())) {
+            evaluateBtn.setText("Verídico!");
+            evaluateBtn.setBackgroundColor(Color.BLUE);
+            evaluateBtn.setTextColor(Color.WHITE);
+            evaluateBtn.setEnabled(false);
+        } else if (ParseUser.getCurrentUser() != null && currentProblem.getUser().getObjectId()
+                .equals(ParseUser.getCurrentUser().getObjectId())) {
+            evaluateBtn.setVisibility(View.INVISIBLE);
+        } else {
+            try {
+                ParseQuery<Veracity> q = Veracity.getQuery();
+                q.whereEqualTo("user", ParseUser.getCurrentUser());
+                q.whereEqualTo("problem", currentProblem);
+                List<Veracity> list = q.find();
+                if (!list.isEmpty()) {
+                    evaluateBtn.setVisibility(View.INVISIBLE);
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
 
         setUpCommentList();
     }
@@ -95,17 +129,29 @@ public class ViewProblemActivity extends ActionBarActivity implements
 
         MenuItem suggestStatus = menu.findItem(R.id.view_problem_suggest_status);
         MenuItem updateStatus = menu.findItem(R.id.view_problem_update_status);
+        MenuItem denounceProblem = menu.findItem(R.id.view_problem_denounce);
         MenuItem deleteProblem = menu.findItem(R.id.view_problem_delete_problem);
 
-        if (ParseUser.getCurrentUser().getObjectId().equals(currentProblem.getUser().getObjectId())) {
-            suggestStatus.setVisible(false);
-        } else if (getIntent().getBooleanExtra("anonymous", false)) {
+        if (ParseUser.getCurrentUser() == null) {//anonymous login
             suggestStatus.setVisible(false);
             updateStatus.setVisible(false);
             deleteProblem.setVisible(false);
+            denounceProblem.setVisible(false);
+            follow.setVisible(false);
+            unfollow.setVisible(false);
+            findViewById(R.id.view_actions).setVisibility(View.INVISIBLE);
+        } else if (ParseUser.getCurrentUser().getObjectId().equals(currentProblem.getUser().getObjectId())) {
+            suggestStatus.setVisible(false);
+            denounceProblem.setVisible(false);
+            follow.setVisible(false);
+            unfollow.setVisible(false);
         } else {
             updateStatus.setVisible(false);
             deleteProblem.setVisible(false);
+
+            if (Denounce.existDenounce(currentProblem, ParseUser.getCurrentUser())) {
+                denounceProblem.setVisible(false);
+            }
         }
 
         return super.onCreateOptionsMenu(menu);
@@ -126,6 +172,9 @@ public class ViewProblemActivity extends ActionBarActivity implements
             case R.id.view_problem_update_status:
                 updateStatus();
                 break;
+            case R.id.view_problem_denounce:
+                showDenounceDlg();
+                break;
             case R.id.view_problem_delete_problem:
                 delete();
                 break;
@@ -134,9 +183,12 @@ public class ViewProblemActivity extends ActionBarActivity implements
     }
 
     private void followProblem() {
-        ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
-        follow.saveInBackground();
-        finish();
+        if (!ProblemFollow.isFollowingProblem(currentProblem, ParseUser.getCurrentUser())) {
+            ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
+            follow.saveInBackground();
+            MainActivity.followingCurrentProblem = true;
+            finish();
+        }
     }
 
     private void unfollowProblem() {
@@ -159,12 +211,17 @@ public class ViewProblemActivity extends ActionBarActivity implements
                 }
             }
         });
-
+        MainActivity.followingCurrentProblem = false;
     }
 
     private void suggestStatus() {
         SuggestStatusDlg dlg = new SuggestStatusDlg();
         dlg.show(getFragmentManager(), "SuggestStatusDlg");
+    }
+
+    private void showDenounceDlg() {
+        DenounceDlg dlg = new DenounceDlg();
+        dlg.show(getFragmentManager(), "DenounceDlg");
     }
 
     private void delete() {
@@ -174,12 +231,14 @@ public class ViewProblemActivity extends ActionBarActivity implements
                 .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         try {
+                            MainActivity.selectedMarker.setVisible(false);
+                            MainActivity.selectedMarker.remove();
                             currentProblem.delete();
+                            notifyAllFollowers("Problema '" + currentProblem.getName() + "' foi excluído!");
+                            finish();
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
-                        Log.d(ViewProblemActivity.TAG, "Problem removed - " + currentProblem.getName());
-                        finish();
                     }
                 })
                 .setNegativeButton("Não", null)
@@ -192,33 +251,65 @@ public class ViewProblemActivity extends ActionBarActivity implements
     }
 
     @Override
-    public void onPickSuggestStatus(String status) {
+    public void onPickSuggestStatus(final String status) {
         SuggestedStatus suggestedStatus = new SuggestedStatus();
         suggestedStatus.setStatus(status);
         suggestedStatus.setProblem(currentProblem);
+        suggestedStatus.setUser(ParseUser.getCurrentUser());
         suggestedStatus.saveInBackground();
 
-        if (!ProblemFollow.isFollowingProblem(currentProblem, ParseUser.getCurrentUser())) {
-            ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
-            follow.saveInBackground();
-        }
-
-        UserNotification userNotification = new UserNotification();
-        userNotification.setMsg(ParseUser.getCurrentUser().getUsername()
+        followProblem();
+        notifyAllFollowers(ParseUser.getCurrentUser().getUsername()
                 + ": sugeriu o status '" + status + "'");
-        userNotification.setTo(currentProblem.getUser());
-        userNotification.setFrom(ParseUser.getCurrentUser());
-        userNotification.setProblem(currentProblem);
-        userNotification.saveInBackground();
-
         finish();
+    }
+
+    private void notifyAllFollowers(final String msg) {
+        ParseQuery<ProblemFollow> fpQuery = ProblemFollow.getQuery();
+        fpQuery.whereEqualTo("problem", currentProblem);
+        fpQuery.findInBackground(new FindCallback<ProblemFollow>() {
+            public void done(List<ProblemFollow> problemFollows, ParseException e) {
+                for (ProblemFollow pf : problemFollows) {
+                    if (!pf.getUser().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                        UserNotification userNotification = new UserNotification();
+                        userNotification.setMsg(msg);
+                        userNotification.setTo(pf.getUser());
+                        userNotification.setFrom(ParseUser.getCurrentUser());
+                        userNotification.setProblem(currentProblem);
+                        userNotification.saveInBackground();
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public void onPickUpdateStatus(String status) {
-        currentProblem.setStatus(status);
-        currentProblem.saveInBackground();
-        finish();
+        try {
+            currentProblem.setStatus(status);
+            currentProblem.save();
+
+            updatedUsersReputationSuggestedStatus(status);
+            if ("Problema resolvido".equals(currentProblem.getStatus())) {
+                updateFollowersReputation();
+            }
+            finish();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updatedUsersReputationSuggestedStatus(String status) {
+        ParseQuery<SuggestedStatus> q = SuggestedStatus.getQuery();
+        q.whereEqualTo("problem", currentProblem);
+        q.whereEqualTo("status", status);
+        q.findInBackground(new FindCallback<SuggestedStatus>() {
+            public void done(List<SuggestedStatus> suggestedStatuses, ParseException e) {
+                for (SuggestedStatus ss : suggestedStatuses) {
+                    UserDetail.getUserDetailFor(ss.getUser()).incReputation(1).saveInBackground();
+                }
+            }
+        });
     }
 
     public void commentClick(View v) {
@@ -237,6 +328,7 @@ public class ViewProblemActivity extends ActionBarActivity implements
         c.setComment(comment);
         c.setProblem(currentProblem);
         c.setUser(ParseUser.getCurrentUser());
+
         try {
             c.save();
             Toast.makeText(getApplicationContext(), "Comentário feito!", Toast.LENGTH_SHORT).show();
@@ -245,19 +337,12 @@ public class ViewProblemActivity extends ActionBarActivity implements
             e.printStackTrace();
         }
 
-        if (!ProblemFollow.isFollowingProblem(currentProblem, ParseUser.getCurrentUser())) {
-            ProblemFollow follow = ProblemFollow.newInstance(currentProblem, ParseUser.getCurrentUser());
-            follow.saveInBackground();
-        }
+        followProblem();
 
-        UserNotification userNotification = new UserNotification();
-        userNotification.setMsg(ParseUser.getCurrentUser().getUsername() +
-                " comentou no problema " + currentProblem.getName().substring(0, 10) + "...");
-        userNotification.setTo(currentProblem.getUser());
-        userNotification.setFrom(ParseUser.getCurrentUser());
-        userNotification.setProblem(currentProblem);
-        userNotification.saveInBackground();
-
+        String problemName = currentProblem.getName().length() > 20 ?
+                currentProblem.getName().substring(0, 20) : currentProblem.getName();
+        notifyAllFollowers(ParseUser.getCurrentUser().getUsername() +
+                " comentou no problema " + problemName + "...");
     }
 
     private void setUpCommentList() {
@@ -314,7 +399,86 @@ public class ViewProblemActivity extends ActionBarActivity implements
     @Override
     public void onPickVeracity(boolean isVeridic) {
         Veracity veracity = new Veracity();
-        veracity.get
+        veracity.setProblem(MainActivity.selectedProblem);
+        veracity.setUser(ParseUser.getCurrentUser());
+        veracity.setVeridic(isVeridic);
 
+        try {
+            veracity.save();
+            recalcVeracities(isVeridic);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        followProblem();
+        notifyAllFollowers(ParseUser.getCurrentUser().getUsername() +
+                " informou que o relato '" + MainActivity.selectedProblem.getName() + "' é " +
+                (isVeridic ? "verídico!" : "falso!"));
+        finish();
+    }
+
+    private void recalcVeracities(boolean isVeridic) {
+        if (isVeridic) {
+            currentProblem.incVeridicScore(UserDetail.getCurrentUserDetail().getReputation());
+        } else {
+            currentProblem.incFalseScore(UserDetail.getCurrentUserDetail().getReputation());
+        }
+
+        if (currentProblem.getVeridicScore() > MainActivity.VERACITY_INDICE) {
+            currentProblem.setVeridicStatus(true);
+            currentProblem.saveInBackground();
+            updateEvaluatedUsersReputation(isVeridic);
+        } else if (currentProblem.getFalseScore() > MainActivity.VERACITY_INDICE) {
+            updateEvaluatedUsersReputation(isVeridic);
+            try {
+                currentProblem.delete();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void updateEvaluatedUsersReputation(final boolean isVeridic) {
+        ParseQuery<Veracity> q = Veracity.getQuery();
+        q.whereEqualTo("problem", currentProblem);
+        q.findInBackground(new FindCallback<Veracity>() {
+            public void done(List<Veracity> veracities, ParseException e) {
+                for (Veracity v : veracities) {
+                    if (v.getVeridic() == isVeridic) {
+                        UserDetail.getUserDetailFor(v.getUser())
+                                .incReputation(3);
+                    } else {
+                        UserDetail.getUserDetailFor(v.getUser())
+                                .decReputation(5);
+                    }
+                }
+            }
+        });
+    }
+
+    public void updateFollowersReputation() {
+        ParseQuery<ProblemFollow> q2 = ProblemFollow.getQuery();
+        q2.whereEqualTo("problem", currentProblem);
+        q2.findInBackground(new FindCallback<ProblemFollow>() {
+            public void done(List<ProblemFollow> problemFollows, ParseException e) {
+                for (ProblemFollow pf : problemFollows) {
+                    UserDetail.getUserDetailFor(pf.getUser())
+                            .incReputation(1);
+                }
+            }
+        });
+    }
+
+    public void onDenounce(String comment) {
+        Denounce denounce = new Denounce();
+        denounce.setProblem(MainActivity.selectedProblem);
+        denounce.setUser(ParseUser.getCurrentUser());
+        denounce.setComment(comment);
+        denounce.saveInBackground();
+
+        followProblem();
+        String problemName = MainActivity.selectedProblem.getName().length() > 15 ?
+                MainActivity.selectedProblem.getName().substring(0, 15) : MainActivity.selectedProblem.getName();
+        notifyAllFollowers("'" + problemName + "' foi denunciado! Comentário: " + comment);
     }
 }

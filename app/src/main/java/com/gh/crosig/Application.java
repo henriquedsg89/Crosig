@@ -1,10 +1,13 @@
 package com.gh.crosig;
 
 import com.gh.crosig.model.Comment;
+import com.gh.crosig.model.Denounce;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.model.SuggestedStatus;
+import com.gh.crosig.model.UserDetail;
 import com.gh.crosig.model.UserNotification;
+import com.gh.crosig.model.Veracity;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseFacebookUtils;
@@ -23,6 +26,9 @@ public class Application extends android.app.Application {
         ParseObject.registerSubclass(UserNotification.class);
         ParseObject.registerSubclass(ProblemFollow.class);
         ParseObject.registerSubclass(Comment.class);
+        ParseObject.registerSubclass(Denounce.class);
+        ParseObject.registerSubclass(Veracity.class);
+        ParseObject.registerSubclass(UserDetail.class);
 
         ParseACL defaultACL = new ParseACL();
         defaultACL.setPublicReadAccess(true);

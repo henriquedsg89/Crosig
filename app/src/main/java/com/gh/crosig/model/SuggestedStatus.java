@@ -3,6 +3,7 @@ package com.gh.crosig.model;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 /**
  * Created by henrique on 05/05/15.
@@ -31,4 +32,11 @@ public class SuggestedStatus extends ParseObject {
         return (String)get("status");
     }
 
+    public void setUser(ParseUser user) {
+        put("user", user);
+    }
+
+    public ParseUser getUser() {
+        return (ParseUser)get("user");
+    }
 }

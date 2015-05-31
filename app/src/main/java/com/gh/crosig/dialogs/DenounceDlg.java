@@ -6,47 +6,39 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.gh.crosig.R;
 
 
-public class CommentDlg extends DialogFragment {
+public class DenounceDlg extends DialogFragment {
 
-    private static final String TAG = "CommentDlg";
+    private static final String TAG = "DenounceDlg";
 
-    public interface CommentDlgListener {
-        public void onUserCommented(String comment);
+    public interface DenounceDlgListener {
+        public void onDenounce(String comment);
     }
 
-    private CommentDlgListener listener;
+    private DenounceDlgListener listener;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         final View dlgView = getActivity().getLayoutInflater().inflate(R.layout.comment_layout, null);
-        builder.setTitle(R.string.comment_problem)
+        builder.setTitle(R.string.denounce_problem)
                 .setView(dlgView)
-                .setPositiveButton(R.string.comment, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.denounce_problem, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        EditText comment = (EditText) dlgView.findViewById(R.id.comment_text);
-                        if (comment.getText().toString().length() < 5) {
-                            Toast.makeText(((Activity)listener).getApplicationContext(),
-                                    "Comentário deve ter mais de 5 carácteres!", Toast.LENGTH_SHORT);
-                        } else {
-                            listener.onUserCommented(((EditText) dlgView.findViewById(
-                                    R.id.comment_text)).getText().toString());
-                        }
+                        listener.onDenounce(((EditText) dlgView.findViewById(
+                                R.id.comment_text)).getText().toString());
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        CommentDlg.this.getDialog().cancel();
+                        DenounceDlg.this.getDialog().cancel();
                     }
                 });
         return builder.create();
@@ -56,7 +48,7 @@ public class CommentDlg extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            listener = (CommentDlgListener) activity;
+            listener = (DenounceDlgListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement NoticeDialogListener");

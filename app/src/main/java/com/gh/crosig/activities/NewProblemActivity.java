@@ -19,6 +19,7 @@ import com.gh.crosig.fragments.NewPhoto;
 import com.gh.crosig.fragments.NewProblemDetails;
 import com.gh.crosig.R;
 import com.gh.crosig.model.Problem;
+import com.gh.crosig.model.ProblemFollow;
 import com.gh.crosig.utils.ImageUtils;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -110,19 +111,20 @@ public class NewProblemActivity extends ActionBarActivity {
 
         final ParseFile parseFile = new ParseFile("test.jpg",
                 ImageUtils.bitmapToByteArray(imageBitmap));
-        parseFile.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                problem.setImage(parseFile);
-                problem.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        finish();
-                    }
-                });
-            }
-        });
+        try {
+            parseFile.save();
+            problem.setImage(parseFile);
+            problem.save();
 
+            ProblemFollow pf = new ProblemFollow();
+            pf.setProblem(problem);
+            pf.setUser(ParseUser.getCurrentUser());
+            pf.saveInBackground();
+
+            finish();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
 

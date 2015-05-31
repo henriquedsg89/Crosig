@@ -1,20 +1,11 @@
 package com.gh.crosig.model;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
 
 /**
  * Created by henrique on 05/05/15.
@@ -67,7 +58,11 @@ public class Problem extends ParseObject {
     }
 
     public ParseFile getImage() {
-        return (ParseFile) get("image");
+        if (containsKey("image")) {
+            Object img = get("image");
+            return img == null ? null : (ParseFile) img;
+        }
+        return null;
     }
 
     public ParseUser getUser() { return (ParseUser)get("user"); }
@@ -80,4 +75,39 @@ public class Problem extends ParseObject {
         return (String) get("status");
     }
 
+    public void incVeridicScore(Integer score) {
+        if (score == null)
+            score = 0;
+        put("veridicScore", getVeridicScore() + score);
+    }
+
+    public int getVeridicScore() {
+        Integer veridicScore = (Integer) get("veridicScore");
+        if (veridicScore == null) {
+            veridicScore = 0;
+        }
+        return veridicScore;
+    }
+
+    public void incFalseScore(Integer score) {
+        if (score == null)
+            score = 0;
+        put("falseScore", getFalseScore() + score);
+    }
+
+    public int getFalseScore() {
+        Integer falseScore = (Integer) get("falseScore");
+        if (falseScore == null) {
+            falseScore = 0;
+        }
+        return falseScore;
+    }
+
+    public void setVeridicStatus(Boolean veridicStatus) {
+        put("veridicStatus", veridicStatus);
+    }
+
+    public Boolean getVeridicStatus() {
+        return (Boolean) get("veridicStatus");
+    }
 }

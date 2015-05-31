@@ -20,6 +20,7 @@ import com.facebook.Profile;
 import com.gh.crosig.R;
 import com.gh.crosig.model.Problem;
 import com.gh.crosig.model.ProblemFollow;
+import com.gh.crosig.model.UserDetail;
 import com.gh.crosig.model.UserNotification;
 import com.gh.crosig.utils.CommonUtils;
 import com.gh.crosig.utils.ImageUtils;
@@ -59,7 +60,8 @@ import static android.widget.Toast.LENGTH_LONG;
 
 
 public class MainActivity extends ActionBarActivity
-        implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        implements OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener, GoogleMap.OnInfoWindowClickListener {
 
     public static final String INTENT_EXTRA_LOCATION = "location";
@@ -69,8 +71,12 @@ public class MainActivity extends ActionBarActivity
 
     private static final int ZOOM = 16;
 
+    public static final int NEUTRAL_SCORE = 50;
+    public static int VERACITY_INDICE = 0;
+
     public static Problem selectedProblem;
     public static Location mLastLocation, previousLocation;
+    public static Marker selectedMarker;
     public static boolean followingCurrentProblem = false;
 
     private GoogleMap mMap;
@@ -88,8 +94,10 @@ public class MainActivity extends ActionBarActivity
         if (ParseUser.getCurrentUser() == null && !getIntent().getBooleanExtra("anonymous", false)) {
             goToSplash();
             return;
+        } else if (ParseUser.getCurrentUser() != null) {
+            loadFBProfile();
         }
-
+        calcVeracityIndice();
         buildGoogleApiClient();
         setUpMapIfNeeded();
     }
@@ -98,6 +106,11 @@ public class MainActivity extends ActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.global, menu);
+
+        if (ParseUser.getCurrentUser() == null) {
+            menu.findItem(R.id.action_new_problem).setVisible(false);
+            menu.findItem(R.id.action_alert).setVisible(false);
+        }
 
         MenuItem alertItem = menu.findItem(R.id.action_alert);
         MenuItem profileItem = menu.findItem(R.id.profile_action);
@@ -120,7 +133,7 @@ public class MainActivity extends ActionBarActivity
         notificationCounter = (TextView) alertItem.getActionView().findViewById(R.id.action_notification_count);
         notificationCounter.setText("0");
         ParseQuery<UserNotification> query = UserNotification.getQuery();
-        query.whereEqualTo("user", ParseUser.getCurrentUser());
+        query.whereEqualTo("to", ParseUser.getCurrentUser());
         query.countInBackground(new CountCallback() {
             @Override
             public void done(int i, ParseException e) {
@@ -245,8 +258,6 @@ public class MainActivity extends ActionBarActivity
         Log.d(TAG, "Connecting location...");
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            Toast.makeText(this, String.format("GPS conectado",
-                    mLastLocation.getLatitude(), mLastLocation.getLongitude()), LENGTH_LONG).show();
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), 16));
             executeMapQuery(mLastLocation);
@@ -349,6 +360,7 @@ public class MainActivity extends ActionBarActivity
     public void onInfoWindowClick(Marker marker) {
         followingCurrentProblem = false;
         selectedProblem = markersProblems.get(marker);
+        selectedMarker = marker;
         ParseQuery<ProblemFollow> followParseQuery = ProblemFollow.getQuery();
         followParseQuery.whereEqualTo("user", ParseUser.getCurrentUser());
         followParseQuery.whereEqualTo("problem", selectedProblem);
@@ -373,6 +385,11 @@ public class MainActivity extends ActionBarActivity
             @Override
             protected Void doInBackground(String... params) {
                 try {
+                    if (!UserDetail.existsDetail(ParseUser.getCurrentUser())) {
+                        UserDetail.newInstance(ParseUser.getCurrentUser()).saveInBackground();
+                    }
+                    checkIsUserBanned();
+
                     URL url = new URL(profilePictureURL);
                     final Bitmap bitmap = ImageUtils.getRoundedCornerBitmap(BitmapFactory
                             .decodeStream(url.openConnection().getInputStream()));
@@ -386,10 +403,7 @@ public class MainActivity extends ActionBarActivity
                                 profilePicture.loadInBackground();
                                 ParseUser.getCurrentUser().put("profilePicture", parseFile);
                                 ParseUser.getCurrentUser().put("username", Profile.getCurrentProfile().getName());
-                                if (ParseUser.getCurrentUser().get("score") == null) {
-                                    ParseUser.getCurrentUser().put("score", 0);
-                                }
-                                ParseUser.getCurrentUser().saveInBackground();
+                                    ParseUser.getCurrentUser().saveInBackground();
                             }
                         });
                     }
@@ -397,6 +411,43 @@ public class MainActivity extends ActionBarActivity
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                return null;
+            }
+        }.execute();
+    }
+
+    private void checkIsUserBanned() {
+        if (UserDetail.getCurrentUserDetail().getReputation() <= 0) {
+            Toast.makeText(getApplicationContext(), "Desculpe, mas seu usuário foi banido!", LENGTH_LONG);
+            ParseUser.logOut();
+            finish();
+        }
+    }
+
+    private void calcVeracityIndice() {
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... params) {
+                ParseQuery<UserDetail> q = UserDetail.getQuery();
+                q.whereGreaterThan("reputation", 50);
+                q.findInBackground(new FindCallback<UserDetail>() {
+                    public void done(List<UserDetail> userDetails, ParseException e) {
+                        if (userDetails.size() < 2) {
+                            //cant set veracity if there isnt true users enought
+                            VERACITY_INDICE = Integer.MAX_VALUE;
+                            return;
+                        }
+                        int sum = 0;
+                        for (UserDetail u : userDetails) {
+                            sum += (Integer) u.get("reputation");
+                        }
+                        try {
+                            VERACITY_INDICE = (int) (sum * 1.5 / userDetails.size());
+                        } catch (Exception e2) {
+                            Log.d(TAG, "Failed to calc veracity indice! " + e.getMessage());
+                        }
+                    }
+                });
                 return null;
             }
         }.execute();

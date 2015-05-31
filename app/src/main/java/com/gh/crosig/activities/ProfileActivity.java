@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.gh.crosig.R;
+import com.gh.crosig.model.UserDetail;
 import com.parse.ParseImageView;
 import com.parse.ParseUser;
 
@@ -28,7 +29,7 @@ public class ProfileActivity extends ActionBarActivity {
         name.setText(ParseUser.getCurrentUser().getUsername());
 
         TextView score = (TextView) findViewById(R.id.activity_profile_score);
-        score.setText(String.valueOf(ParseUser.getCurrentUser().get("score")));
+        score.setText(String.valueOf(UserDetail.getCurrentUserDetail().getReputation()));
 
         Button logout = (Button) findViewById(R.id.activity_profile_logout);
         logout.setOnClickListener(new View.OnClickListener() {

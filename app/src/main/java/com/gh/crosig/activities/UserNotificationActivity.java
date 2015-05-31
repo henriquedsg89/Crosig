@@ -1,20 +1,18 @@
 package com.gh.crosig.activities;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gh.crosig.R;
-import com.gh.crosig.model.Comment;
 import com.gh.crosig.model.UserNotification;
+import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
 import com.parse.ParseUser;
@@ -36,8 +34,8 @@ public class UserNotificationActivity extends ActionBarActivity {
                 new ParseQueryAdapter.QueryFactory<UserNotification>() {
                     public ParseQuery<UserNotification> create() {
                         ParseQuery<UserNotification> query = UserNotification.getQuery();
-                        query.whereEqualTo("user", ParseUser.getCurrentUser());
-                        query.include("user");
+                        query.whereEqualTo("to", ParseUser.getCurrentUser());
+                        query.include("to");
                         query.orderByDescending("createdAt");
                         return query;
                     }
@@ -52,6 +50,16 @@ public class UserNotificationActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 UserNotification notification = notificationAdapter.getItem(position);
+                if (notification.getProblem() == null) {
+                    Toast.makeText(getApplicationContext(), "Problema já não existe mais, foi excluído!", Toast.LENGTH_LONG);
+                    try {
+                        notification.delete();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    notificationAdapter.loadObjects();
+                    return;
+                }
                 MainActivity.selectedProblem = notification.getProblem();
                 Intent intent = new Intent(UserNotificationActivity.this, ViewProblemActivity.class);
                 startActivity(intent);

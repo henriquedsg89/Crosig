@@ -36,15 +36,17 @@ public class SearchActivity extends ActionBarActivity {
         final ParseQueryAdapter.QueryFactory<Problem> factory =
                 new ParseQueryAdapter.QueryFactory<Problem>() {
                     public ParseQuery<Problem> create() {
-                        Log.d(TAG, "Location " + MainActivity.mLastLocation);
-                        ParseGeoPoint geoPoint = new ParseGeoPoint(MainActivity.mLastLocation.getLatitude(), MainActivity.mLastLocation.getLongitude());
                         ParseQuery<Problem> query = Problem.getQuery();
                         query.include("user");
                         query.orderByDescending("createdAt");
                         if (queryFilter != null) {
                             query.whereMatches("name", "(" + queryFilter + ")", "i");
                         }
-                        query.whereWithinKilometers("location", geoPoint, 100);
+                        if (MainActivity.mLastLocation != null) {
+                            Log.d(TAG, "Location " + MainActivity.mLastLocation);
+                            ParseGeoPoint geoPoint = new ParseGeoPoint(MainActivity.mLastLocation.getLatitude(), MainActivity.mLastLocation.getLongitude());
+                            query.whereWithinKilometers("location", geoPoint, 100);
+                        }
                         return query;
                     }
                 };
